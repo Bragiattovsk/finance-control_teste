@@ -26,7 +26,7 @@ export function useFeedback() {
 
       const payload = {
         user_id: user.id,
-        type,
+        type: type.toUpperCase(),
         message,
         page_url: pageUrl || (typeof window !== 'undefined' ? window.location.href : ''),
         user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : '',

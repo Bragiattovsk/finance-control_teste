@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/dialog"
 
 export function Settings() {
-    const { user, signOut, refreshProfile } = useAuth()
+    const { user, signOut } = useAuth()
     const { toast } = useToast()
     const [loading, setLoading] = useState(false)
     const [setupLoading, setSetupLoading] = useState(false)
@@ -284,43 +284,7 @@ export function Settings() {
                 </CardContent>
             </Card>
 
-            <Card className="rounded-xl border-border/50 bg-card shadow-sm">
-                <CardHeader>
-                    <CardTitle>Teste de Plano (Dev Only)</CardTitle>
-                    <CardDescription>
-                        Alternar entre planos para testar funcionalidades.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="flex gap-4">
-                    <Button
-                        onClick={async () => {
-                            await supabase.rpc('upgrade_to_pro')
-                            await refreshProfile()
-                            toast({
-                                title: "Sucesso",
-                                description: "Plano atualizado para PRO",
-                                className: "bg-emerald-500 text-white border-none",
-                            })
-                        }}
-                        className="bg-violet-600 hover:bg-violet-700"
-                    >
-                        Virar PRO
-                    </Button>
-                    <Button
-                        onClick={async () => {
-                            await supabase.rpc('downgrade_to_free')
-                            await refreshProfile()
-                            toast({
-                                title: "Sucesso",
-                                description: "Plano atualizado para FREE",
-                            })
-                        }}
-                        variant="outline"
-                    >
-                        Virar FREE
-                    </Button>
-                </CardContent>
-            </Card>
+            
         </div>
     )
 }
