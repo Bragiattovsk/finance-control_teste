@@ -1,0 +1,6 @@
+﻿src/components/dashboard/DashboardGrid.tsx(2,51): error TS2307: Cannot find module 'react-grid-layout' or its corresponding type declarations.
+src/components/ui/dropdown-menu.tsx(2,40): error TS2307: Cannot find module '@radix-ui/react-dropdown-menu' or its corresponding type declarations.
+src/hooks/useDashboardLayout.ts(6,22): error TS2307: Cannot find module 'lodash.debounce' or its corresponding type declarations.
+src/hooks/useDashboardWidgets.ts(4,24): error TS2307: Cannot find module 'react-grid-layout' or its corresponding type declarations.
+src/pages/auth/ForgotPasswordPage.tsx(9,19): error TS2307: Cannot find module 'zod' or its corresponding type declarations.
+src/pages/auth/UpdatePasswordPage.tsx(9,19): error TS2307: Cannot find module 'zod' or its corresponding type declarations.
