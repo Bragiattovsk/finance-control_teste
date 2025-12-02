@@ -219,7 +219,7 @@ export const useDashboardWidgets = () => {
                     ...data,
                     id: newWidgetId,
                     type: data.chart_type as WidgetType,
-                    chart_type: 'pie', // Default visual type
+                    chart_type: data.chart_type as WidgetType,
                     layout_config: data.layout_config as WidgetLayout,
                     data_config: data.data_config as Record<string, unknown>,
                 };

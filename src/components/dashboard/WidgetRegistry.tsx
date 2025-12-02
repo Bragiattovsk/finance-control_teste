@@ -36,9 +36,10 @@ const FallbackWidget = ({ type }: { type: string }) => (
 
 interface WidgetRendererProps {
     widget: DashboardWidgetConfig;
+    currentDate: Date;
 }
 
-export const WidgetRenderer = ({ widget }: WidgetRendererProps) => {
+export const WidgetRenderer = ({ widget, currentDate }: WidgetRendererProps) => {
     const typeKey = widget.chart_type as WidgetType;
     const Component = WIDGET_REGISTRY[typeKey];
 
@@ -59,7 +60,7 @@ export const WidgetRenderer = ({ widget }: WidgetRendererProps) => {
         const categoryIds = Array.isArray(props['categoryIds']) ? (props['categoryIds'] as string[]) : []
         return (
             <div className="h-full w-full">
-                <CustomExpenseWidget categoryIds={categoryIds} title={title} />
+                <CustomExpenseWidget categoryIds={categoryIds} title={title} currentDate={currentDate} />
             </div>
         )
     }
@@ -72,6 +73,7 @@ export const WidgetRenderer = ({ widget }: WidgetRendererProps) => {
                     title={widget.title}
                     chartType={visualChartType}
                     dataConfig={widget.data_config}
+                    currentDate={currentDate}
                 />
             </div>
         );

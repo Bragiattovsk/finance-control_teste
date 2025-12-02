@@ -9,10 +9,11 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'
 interface CustomExpenseWidgetProps {
   categoryIds: string[]
   title?: string
+  currentDate: Date
 }
 
-export const CustomExpenseWidget: React.FC<CustomExpenseWidgetProps> = ({ categoryIds, title = 'Gráfico Personalizado' }) => {
-  const { data, loading } = useCustomExpensesMetrics(categoryIds)
+export const CustomExpenseWidget: React.FC<CustomExpenseWidgetProps> = ({ categoryIds, title = 'Gráfico Personalizado', currentDate }) => {
+  const { data, loading } = useCustomExpensesMetrics(categoryIds, currentDate)
 
   if (!categoryIds || categoryIds.length === 0) {
     return (

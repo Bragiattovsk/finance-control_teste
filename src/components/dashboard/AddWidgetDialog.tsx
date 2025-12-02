@@ -14,7 +14,8 @@ import { cn } from '@/lib/utils';
 interface AddWidgetDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    onAdd: (type: WidgetType, size: WidgetSize, options?: { title?: string; config?: { categoryIds?: string[] } }) => void;
+    onAdd: (type: WidgetType, size: WidgetSize, options?: { title?: string; config?: { categoryIds?: string[] } }) => Promise<void>;
+    onSuccess?: () => void;
 }
 
 interface Category {
@@ -22,7 +23,7 @@ interface Category {
     nome: string;
 }
 
-export const AddWidgetDialog: React.FC<AddWidgetDialogProps> = ({ open, onOpenChange, onAdd }) => {
+export const AddWidgetDialog: React.FC<AddWidgetDialogProps> = ({ open, onOpenChange, onAdd, onSuccess }) => {
     const { user } = useAuth();
     const [title, setTitle] = useState('');
     const [chartType, setChartType] = useState<ChartType>('pie');
@@ -58,14 +59,31 @@ export const AddWidgetDialog: React.FC<AddWidgetDialogProps> = ({ open, onOpenCh
 
     const handleSubmit = async () => {
         if (!user) return;
+        let finalType: WidgetType = 'EXPENSE_BY_CATEGORY';
+        let config: Record<string, unknown> = {};
+
+        if (dataSource === 'custom') {
+            finalType = 'CUSTOM_EXPENSE';
+            config = { categoryIds: selectedCategories };
+        } else if (dataSource === 'income_vs_expense' || chartType === 'bar') {
+            finalType = 'REVENUE_VS_EXPENSE';
+            config = { mode: 'income_vs_expense' };
+        } else {
+            finalType = 'EXPENSE_BY_CATEGORY';
+            config = { dataSource };
+        }
 
         const options = {
             title: title || 'Novo Widget',
-            config: dataSource === 'custom' ? { categoryIds: selectedCategories } : {},
+            config,
         };
 
-        onAdd('CUSTOM_EXPENSE', widgetSize, options);
-        onOpenChange(false);
+        await onAdd(finalType, widgetSize, options);
+        if (onSuccess) {
+            onSuccess();
+        } else {
+            onOpenChange(false);
+        }
 
         // Reset form
         setTitle('');
@@ -167,18 +185,19 @@ export const AddWidgetDialog: React.FC<AddWidgetDialogProps> = ({ open, onOpenCh
                             <Label htmlFor="category" className="text-right mt-2">
                                 Dados
                             </Label>
-                            <div className="col-span-3 space-y-3">
-                                <Select value={dataSource} onValueChange={setDataSource}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Selecione os dados" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">Todas as Despesas</SelectItem>
-                                        <SelectItem value="fixed">Apenas Fixas</SelectItem>
-                                        <SelectItem value="variable">Apenas Variáveis</SelectItem>
-                                        <SelectItem value="custom">Por Categoria</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                    <div className="col-span-3 space-y-3">
+                        <Select value={dataSource} onValueChange={setDataSource}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Selecione os dados" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Todas as Despesas</SelectItem>
+                                <SelectItem value="fixed">Apenas Fixas</SelectItem>
+                                <SelectItem value="variable">Apenas Variáveis</SelectItem>
+                                <SelectItem value="income_vs_expense">Receitas vs Despesas</SelectItem>
+                                <SelectItem value="custom">Por Categoria</SelectItem>
+                            </SelectContent>
+                        </Select>
 
                                 {dataSource === 'custom' && (
                                     <div className="border rounded-md p-3 space-y-2 max-h-[200px] overflow-y-auto bg-slate-50 dark:bg-slate-900">

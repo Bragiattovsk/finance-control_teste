@@ -9,7 +9,7 @@ export interface ExpenseSlice {
   [key: string]: string | number | undefined
 }
 
-export function useCustomExpensesMetrics(categoryIds: string[]) {
+export function useCustomExpensesMetrics(categoryIds: string[], date: Date) {
   const { user } = useAuth()
   const [data, setData] = useState<ExpenseSlice[]>([])
   const [loading, setLoading] = useState(false)
@@ -26,6 +26,9 @@ export function useCustomExpensesMetrics(categoryIds: string[]) {
       setLoading(true)
       setError(null)
       try {
+        const start = new Date(date.getFullYear(), date.getMonth(), 1).toISOString()
+        const end = new Date(date.getFullYear(), date.getMonth() + 1, 0).toISOString()
+
         const { data: transactions, error: supaError } = await supabase
           .from('transactions')
           .select(`
@@ -36,6 +39,8 @@ export function useCustomExpensesMetrics(categoryIds: string[]) {
           .eq('user_id', user.id)
           .eq('tipo', 'despesa')
           .in('categoria_id', categoryIds)
+          .gte('data', start)
+          .lte('data', end)
 
         if (supaError) throw supaError
 
@@ -64,7 +69,7 @@ export function useCustomExpensesMetrics(categoryIds: string[]) {
     }
 
     fetchData()
-  }, [user, categoryIds])
+  }, [user, categoryIds, date])
 
   return { data, loading, error }
 }

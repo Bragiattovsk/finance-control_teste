@@ -14,15 +14,17 @@ interface CustomChartWidgetProps {
         mode?: string; // 'income_vs_expense' para resumo
     };
     type?: string;
+    currentDate: Date;
 }
 
 const COLORS = ['#8b5cf6', '#10b981', '#f43f5e', '#6366f1', '#f59e0b', '#06b6d4', '#ec4899', '#14b8a6'];
 
-export const CustomChartWidget: React.FC<CustomChartWidgetProps> = ({ title, chartType, dataConfig }) => {
-    const currentDate = useMemo(() => new Date(), []);
+type ChartDatum = { name: string; value: number; color?: string };
+
+export const CustomChartWidget: React.FC<CustomChartWidgetProps> = ({ title, chartType, dataConfig, currentDate }) => {
     const { transactions, loading, income, expense } = useInvestment(currentDate);
 
-    const processedData = useMemo(() => {
+    const processedData = useMemo<ChartDatum[]>(() => {
         const isIncomeVsExpense = (
             title?.toLowerCase().includes('receitas vs despesas') ||
             dataConfig?.mode === 'income_vs_expense' ||
@@ -107,7 +109,7 @@ export const CustomChartWidget: React.FC<CustomChartWidgetProps> = ({ title, cha
                                 stroke="hsl(var(--card))"
                             >
                                 {processedData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={(entry as any).color || COLORS[index % COLORS.length]} />
+                                    <Cell key={`cell-${index}`} fill={entry.color || COLORS[index % COLORS.length]} />
                                 ))}
                             </Pie>
                             <Tooltip 
@@ -168,7 +170,7 @@ export const CustomChartWidget: React.FC<CustomChartWidgetProps> = ({ title, cha
                                 maxBarSize={50}
                             >
                                 {processedData.map((entry, index) => (
-                                    <Cell key={`bar-cell-${index}`} fill={(entry as any).color || 'hsl(var(--primary))'} />
+                                    <Cell key={`bar-cell-${index}`} fill={entry.color || 'hsl(var(--primary))'} />
                                 ))}
                             </Bar>
                         </BarChart>

@@ -16,6 +16,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
+import { SecuritySettings } from "@/components/settings/SecuritySettings"
 
 import {
     Dialog,
@@ -217,6 +218,8 @@ export function Settings() {
                 </CardContent>
             </Card>
 
+            <SecuritySettings />
+            
             <Card className="rounded-xl border-border/50 bg-card shadow-sm">
                 <CardHeader>
                     <CardTitle>Configuração Inicial</CardTitle>

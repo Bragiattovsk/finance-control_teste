@@ -1,6 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useDashboardWidgets } from '@/hooks/useDashboardWidgets';
 import { WidgetRenderer } from './WidgetRegistry';
 import { Button } from '@/components/ui/button';
 import { Loader2, X, LayoutDashboard, GripVertical } from 'lucide-react';
@@ -37,9 +35,10 @@ interface SortableWidgetProps {
     isEditing: boolean;
     isPro: boolean;
     onRemoveRequest: (id: string) => void;
+    currentDate: Date;
 }
 
-function SortableWidget({ widget, isEditing, isPro, onRemoveRequest }: SortableWidgetProps) {
+function SortableWidget({ widget, isEditing, isPro, onRemoveRequest, currentDate }: SortableWidgetProps) {
     const {
         attributes,
         listeners,
@@ -90,25 +89,24 @@ function SortableWidget({ widget, isEditing, isPro, onRemoveRequest }: SortableW
                 </div>
             )}
             <div className="flex-1 min-h-0 p-4">
-                <WidgetRenderer widget={widget} />
+                <WidgetRenderer widget={widget} currentDate={currentDate} />
             </div>
         </div>
     );
 }
 
 interface DashboardGridProps {
+    widgets: DashboardWidgetConfig[];
+    loading: boolean;
     isEditing: boolean;
+    isPro: boolean;
     onAddWidget: () => void;
+    onRemoveWidget: (id: string) => void;
+    onReorderWidgets: (activeId: string, overId: string) => void;
+    currentDate: Date;
 }
 
-export function DashboardGrid({ isEditing, onAddWidget }: DashboardGridProps) {
-    const { profile } = useAuth();
-    const {
-        widgets,
-        loading: widgetsLoading,
-        deleteWidget,
-        reorderWidgets
-    } = useDashboardWidgets();
+export function DashboardGrid({ widgets, loading, isEditing, isPro, onAddWidget, onRemoveWidget, onReorderWidgets, currentDate }: DashboardGridProps) {
 
     const [mounted, setMounted] = useState(false);
     const [itemToDelete, setItemToDelete] = useState<string | null>(null);
@@ -135,15 +133,13 @@ export function DashboardGrid({ isEditing, onAddWidget }: DashboardGridProps) {
         setMounted(true);
     }, []);
 
-    const isPro = profile?.subscription_tier === 'PRO';
-
     const handleRemoveRequest = (widgetId: string) => {
         setItemToDelete(widgetId);
     };
 
     const confirmRemove = () => {
         if (itemToDelete) {
-            deleteWidget(itemToDelete);
+            onRemoveWidget(itemToDelete);
             setItemToDelete(null);
         }
     };
@@ -152,11 +148,11 @@ export function DashboardGrid({ isEditing, onAddWidget }: DashboardGridProps) {
         const { active, over } = event;
 
         if (over && active.id !== over.id) {
-            reorderWidgets(active.id as string, over.id as string);
+            onReorderWidgets(active.id as string, over.id as string);
         }
     };
 
-    if (widgetsLoading || !mounted) {
+    if (loading || !mounted) {
         return (
             <div className="flex h-96 items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -198,6 +194,7 @@ export function DashboardGrid({ isEditing, onAddWidget }: DashboardGridProps) {
                                 isEditing={isEditing}
                                 isPro={isPro}
                                 onRemoveRequest={handleRemoveRequest}
+                                currentDate={currentDate}
                             />
                         ))}
                     </div>

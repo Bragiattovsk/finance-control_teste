@@ -28,7 +28,7 @@ export function Dashboard() {
     const { profile } = useAuth()
     const isPro = profile?.subscription_tier === 'PRO'
 
-    const { loading: widgetsLoading, addWidget } = useDashboardWidgets()
+    const { widgets, loading: widgetsLoading, addWidget, deleteWidget, reorderWidgets, refresh } = useDashboardWidgets()
     const [isEditing, setIsEditing] = useState(false)
     const [isAddWidgetOpen, setIsAddWidgetOpen] = useState(false)
     const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false)
@@ -41,8 +41,8 @@ export function Dashboard() {
         }
     };
 
-    const handleAddWidget = (type: WidgetType, size: WidgetSize, options?: { title?: string; config?: { categoryIds?: string[] } }) => {
-        addWidget(type, size, options);
+    const handleAddWidget = async (type: WidgetType, size: WidgetSize, options?: { title?: string; config?: { categoryIds?: string[] } }) => {
+        await addWidget(type, size, options);
     };
 
     if (loading) {
@@ -214,8 +214,14 @@ export function Dashboard() {
                         </div>
                     ) : (
                         <DashboardGrid
+                            widgets={widgets}
+                            loading={widgetsLoading}
                             isEditing={isEditing}
                             onAddWidget={handleAddWidgetClick}
+                            isPro={isPro}
+                            onRemoveWidget={deleteWidget}
+                            onReorderWidgets={reorderWidgets}
+                            currentDate={currentDate}
                         />
                     )}
                 </div>
@@ -225,6 +231,7 @@ export function Dashboard() {
                 open={isAddWidgetOpen}
                 onOpenChange={setIsAddWidgetOpen}
                 onAdd={handleAddWidget}
+                onSuccess={() => { refresh(); setIsAddWidgetOpen(false); }}
             />
 
             <UpgradeModal
