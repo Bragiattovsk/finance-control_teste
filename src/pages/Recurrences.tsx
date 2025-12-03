@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { supabase } from "@/lib/supabase"
 import { useAuth } from "@/contexts/auth-hooks"
-import { useProject } from "@/contexts/ProjectContext"
+import { useProject } from "@/contexts/project-hooks"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {

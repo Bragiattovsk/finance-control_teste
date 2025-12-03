@@ -59,8 +59,3 @@ finance-control/
 ├── postcss.config.js
 └── eslint.config.js
 ```
-## Notas da versão de testes
-
-- A funcionalidade de alternância entre planos `FREE` e `PRO` foi removida da tela de Configurações nesta versão exclusiva para testes.
-- Não há processamento de mudança de plano no frontend; chamadas RPC de upgrade/downgrade foram eliminadas.
-- A interface permanece consistente após a remoção e recursos premium continuam exibindo bloqueios/CTAs conforme o plano atual.

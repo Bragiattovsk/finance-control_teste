@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { supabase } from "@/lib/supabase"
 import { useAuth } from "@/contexts/auth-hooks"
-import { useProject } from "@/contexts/ProjectContext"
+import { useProject } from "@/contexts/project-hooks"
 import { applyProjectScope } from "@/lib/supabase-helpers"
 import { Project, Category } from "@/types"
 

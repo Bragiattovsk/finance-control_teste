@@ -23,7 +23,7 @@ import { DeleteInstallmentModal } from '@/components/modals/DeleteInstallmentMod
 import { useTransactions } from '@/hooks/useTransactions'
 import { ReceiptViewerModal } from '@/components/transactions/ReceiptViewerModal'
 
-import { useProject } from "@/contexts/ProjectContext"
+import { useProject } from "@/contexts/project-hooks"
 
 export function Transactions() {
     const { user } = useAuth()

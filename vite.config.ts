@@ -10,9 +10,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
-        name: 'Finance Control Pro',
-        short_name: 'Finance',
-        description: 'Gestão Financeira para Profissionais',
+        name: 'Nexo - Finance Control',
+        short_name: 'Nexo',
+        description: 'Sua gestão financeira inteligente.',
         theme_color: '#09090b',
         background_color: '#09090b',
         display: 'standalone',

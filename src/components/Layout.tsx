@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from "react-router-dom"
-import { LayoutDashboard, DollarSign, Settings, LogOut, CalendarClock, Layers, TrendingUp, BarChart3, Wallet } from "lucide-react"
+import { LayoutDashboard, DollarSign, Settings, LogOut, CalendarClock, Layers, TrendingUp, BarChart3 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/contexts/auth-hooks"
@@ -42,10 +42,15 @@ export function Layout() {
             {/* Sidebar */}
             <aside className="hidden w-64 flex-col border-r border-border/50 bg-zinc-900/50 px-4 py-6 md:flex backdrop-blur-xl">
                 <div className="mb-6 flex items-center px-2 gap-[15px]">
-                    <div className="flex h-[40px] w-[40px] shrink-0 items-center justify-center rounded-full bg-[#8A2BE2] shadow-md">
-                        <Wallet className="h-6 w-6 text-white" />
+                    <img 
+                        src="/favicon.svg" 
+                        alt="Nexo Logo" 
+                        className="h-10 w-10 rounded-full object-cover shadow-md" 
+                    />
+                    <div className="flex flex-col items-start leading-none">
+                        <span className="text-xl font-bold text-primary">Nexo</span>
+                        <span className="text-[10px] font-normal text-muted-foreground tracking-widest">FINANCE CONTROL</span>
                     </div>
-                    <span className="text-xl font-bold tracking-tight text-foreground">Finance Control</span>
                 </div>
                 <div className="mb-4 px-2">
                     <div className="flex items-center gap-2 mt-2">

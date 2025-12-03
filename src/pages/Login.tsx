@@ -62,6 +62,17 @@ export function Login() {
 
             <Card className="z-10 w-full max-w-md border-border/50 bg-zinc-900/50 text-foreground backdrop-blur-xl shadow-2xl transition-all duration-300 hover:shadow-violet-500/10">
                 <CardHeader className="space-y-1">
+                    <div className="flex flex-col items-center justify-center mb-6 space-y-3">
+                        <img 
+                            src="/favicon.svg" 
+                            alt="Nexo Logo" 
+                            className="h-12 w-12 rounded-full object-cover shadow-md" 
+                        />
+                        <div className="flex flex-col items-center leading-none">
+                            <span className="text-2xl font-bold text-primary">Nexo</span>
+                            <span className="text-xs font-normal text-muted-foreground tracking-widest">FINANCE CONTROL</span>
+                        </div>
+                    </div>
                     <CardTitle className="text-2xl font-bold text-center bg-gradient-to-r from-violet-400 to-rose-600 bg-clip-text text-transparent">
                         Bem-vindo de volta
                     </CardTitle>

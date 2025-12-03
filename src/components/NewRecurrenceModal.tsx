@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch"
 import { supabase } from "@/lib/supabase"
 import { useAuth } from "@/contexts/auth-hooks"
-import { useProject } from "@/contexts/ProjectContext"
+import { useProject } from "@/contexts/project-hooks"
 import { Loader2, Plus } from "lucide-react"
 
 interface Category {

@@ -5,7 +5,7 @@ import { Project } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { ProjectContext } from "./project-context";
 
-export { useProject } from "./project-hooks";
+// hook reexport removido para compatibilidade com Fast Refresh
 
 export function ProjectProvider({ children }: { children: ReactNode }) {
     const { user, profile } = useAuth();

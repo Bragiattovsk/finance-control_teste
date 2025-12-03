@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react"
 import { supabase } from "@/lib/supabase"
 import { useAuth } from "@/contexts/auth-hooks"
-import { useProject } from "@/contexts/ProjectContext"
+import { useProject } from "@/contexts/project-hooks"
 import { useToast } from "@/hooks/use-toast"
 
 export function useRecurrenceCheck(onSuccess?: () => void) {

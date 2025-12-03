@@ -71,6 +71,17 @@ export function ForgotPasswordPage() {
 
             <Card className="z-10 w-full max-w-md border-slate-800 bg-slate-900/80 text-slate-100 backdrop-blur-xl shadow-2xl">
                 <CardHeader className="space-y-1">
+                    <div className="flex flex-col items-center justify-center mb-6 space-y-3">
+                        <img 
+                            src="/favicon.svg" 
+                            alt="Nexo Logo" 
+                            className="h-12 w-12 rounded-full object-cover shadow-md" 
+                        />
+                        <div className="flex flex-col items-center leading-none">
+                            <span className="text-2xl font-bold text-primary">Nexo</span>
+                            <span className="text-xs font-normal text-muted-foreground tracking-widest">FINANCE CONTROL</span>
+                        </div>
+                    </div>
                     <CardTitle className="text-2xl font-bold text-center bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent">
                         Recuperar Senha
                     </CardTitle>

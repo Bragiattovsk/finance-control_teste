@@ -1,5 +1,5 @@
 import { ContextSwitcher } from "@/components/ContextSwitcher"
-import { User, Bell, Wallet } from "lucide-react"
+import { User, Bell } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export function MobileHeader() {
@@ -7,9 +7,11 @@ export function MobileHeader() {
     return (
         <header className="fixed top-0 left-0 right-0 h-16 bg-background/80 backdrop-blur-md border-b border-border/50 z-40 flex items-center justify-between px-4 md:hidden">
             <div className="flex items-center gap-3 flex-1 max-w-[70%]">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#8A2BE2] shadow-sm">
-                    <Wallet className="h-4 w-4 text-white" />
-                </div>
+                <img 
+                    src="/favicon.svg" 
+                    alt="Nexo Logo" 
+                    className="h-8 w-8 rounded-full object-cover shadow-sm" 
+                />
                 <div className="flex-1">
                     <ContextSwitcher className="border-transparent bg-transparent shadow-none hover:bg-accent/50 pl-0 h-9 text-base font-semibold p-0" />
                 </div>

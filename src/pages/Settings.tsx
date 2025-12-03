@@ -17,8 +17,8 @@ import {
 } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { SecuritySettings } from "@/components/settings/SecuritySettings"
-import { usePWAInstall } from "@/hooks/usePWAInstall"
-import { Download, Share, PlusSquare } from "lucide-react"
+import { usePWA } from "@/hooks/use-pwa"
+import { Download, Share, PlusSquare, Smartphone, CheckCircle } from "lucide-react"
 
 import {
     Dialog,
@@ -33,7 +33,7 @@ import {
 export function Settings() {
     const { user, signOut } = useAuth()
     const { toast } = useToast()
-    const { supportsPWA, promptInstall, isIOS, isStandalone } = usePWAInstall()
+    const { isStandalone, installApp, isInstallable, showIOSInstructions, setShowIOSInstructions } = usePWA()
     const [loading, setLoading] = useState(false)
     const [setupLoading, setSetupLoading] = useState(false)
     const [deleteLoading, setDeleteLoading] = useState(false)
@@ -179,42 +179,7 @@ export function Settings() {
         <div className="space-y-8">
             <h1 className="text-3xl font-bold">Configurações</h1>
 
-            {!isStandalone && (supportsPWA || isIOS) && (
-                <Card className="rounded-xl border-purple-500/30 bg-purple-500/5 shadow-sm">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Download className="h-5 w-5 text-purple-500" />
-                            Instalar Aplicativo
-                        </CardTitle>
-                        <CardDescription>
-                            Instale o Finance Control para um acesso mais rápido e melhor experiência.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        {supportsPWA ? (
-                            <Button 
-                                onClick={promptInstall} 
-                                className="w-full sm:w-auto gap-2 bg-purple-600 hover:bg-purple-700 text-white"
-                            >
-                                <Download className="h-4 w-4" />
-                                Instalar App
-                            </Button>
-                        ) : isIOS ? (
-                            <div className="space-y-3 text-sm text-muted-foreground bg-background/50 p-4 rounded-lg border border-border/50">
-                                <p className="font-medium text-foreground">Como instalar no iPhone:</p>
-                                <div className="flex items-center gap-3">
-                                    <Share className="h-4 w-4 text-blue-500" />
-                                    <span>Toque no botão <strong>Compartilhar</strong> no navegador</span>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <PlusSquare className="h-4 w-4 text-foreground" />
-                                    <span>Selecione <strong>Adicionar à Tela de Início</strong></span>
-                                </div>
-                            </div>
-                        ) : null}
-                    </CardContent>
-                </Card>
-            )}
+            
 
             <Card className="rounded-xl border-border/50 bg-card shadow-sm">
                 <CardHeader>
@@ -259,6 +224,63 @@ export function Settings() {
             </Card>
 
             <SecuritySettings />
+
+            <Card className="rounded-xl border-border/50 bg-card shadow-sm">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Smartphone className="h-5 w-5 text-primary" />
+                        Aplicativo Mobile
+                    </CardTitle>
+                    <CardDescription>
+                        Instale o app para acesso rápido e melhor experiência.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {isStandalone ? (
+                        <div className="flex items-center gap-2 rounded-lg px-4 py-3 bg-emerald-500/10 text-emerald-600">
+                            <CheckCircle className="h-5 w-5" />
+                            <span>O aplicativo já está instalado neste dispositivo.</span>
+                        </div>
+                    ) : (
+                        <Button
+                            onClick={installApp}
+                            disabled={!isInstallable}
+                            className="w-full sm:w-auto gap-2"
+                        >
+                            <Download className="h-4 w-4" />
+                            Instalar App na Tela Inicial
+                        </Button>
+                    )}
+                </CardContent>
+            </Card>
+
+            <Dialog open={showIOSInstructions} onOpenChange={setShowIOSInstructions}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Instalar no iPhone/iPad</DialogTitle>
+                        <DialogDescription>
+                            Siga os passos abaixo para adicionar o app à sua tela inicial.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-3 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-3">
+                            <Share className="h-4 w-4" />
+                            <span>Toque no ícone de Compartilhar</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <PlusSquare className="h-4 w-4" />
+                            <span>Role para baixo e selecione Adicionar à Tela de Início</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <CheckCircle className="h-4 w-4" />
+                            <span>Confirme clicando em Adicionar</span>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button onClick={() => setShowIOSInstructions(false)}>Entendi</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             <Card className="rounded-xl border-border/50 bg-card shadow-sm">
                 <CardHeader>
@@ -327,7 +349,6 @@ export function Settings() {
                 </CardContent>
             </Card>
 
-            
         </div>
     )
 }

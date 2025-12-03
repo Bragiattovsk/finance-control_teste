@@ -6,15 +6,17 @@ import { ShadcnDemo } from "@/components/ShadcnDemo"
 import { Login } from "@/pages/Login"
 import { Loader2 } from "lucide-react"
 import { Toaster } from "@/components/ui/toaster"
-import { Suspense, lazy } from "react"
+import { Suspense, lazy, useEffect, useState } from "react"
 import { Loading } from "@/components/Loading"
 import { ProjectProvider } from "@/contexts/ProjectContext"
+import { PWAProvider } from "@/contexts/PWAContext"
 import { AnalyticsPage } from "@/pages/AnalyticsPage"
 import { AccountRecovery } from "@/pages/AccountRecovery"
 import { ForgotPasswordPage } from "@/pages/auth/ForgotPasswordPage"
 import { UpdatePasswordPage } from "@/pages/auth/UpdatePasswordPage"
 
 import { AutoLogout } from "@/components/AutoLogout"
+import { SplashScreen } from "@/components/SplashScreen"
 
 // Lazy load pages
 const Dashboard = lazy(() => import("@/pages/Dashboard").then(module => ({ default: module.Dashboard })))
@@ -74,12 +76,31 @@ function AppRoutes() {
 }
 
 function App() {
+  const [showSplash, setShowSplash] = useState(true)
+
+  useEffect(() => {
+    const seen = sessionStorage.getItem('hasSeenSplash')
+    if (seen === 'true') {
+      setShowSplash(false)
+    }
+  }, [])
+
   return (
     <BrowserRouter>
       <AuthProvider>
         <ProjectProvider>
+          {showSplash && (
+            <SplashScreen
+              onFinish={() => {
+                setShowSplash(false)
+                sessionStorage.setItem('hasSeenSplash', 'true')
+              }}
+            />
+          )}
           <AutoLogout />
-          <AppRoutes />
+          <PWAProvider>
+            <AppRoutes />
+          </PWAProvider>
           <Toaster />
         </ProjectProvider>
       </AuthProvider>

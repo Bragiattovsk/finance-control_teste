@@ -154,9 +154,7 @@ export const useDashboardWidgets = () => {
             await Promise.all(updates);
 
         } catch (err: unknown) {
-            if (import.meta.env.DEV) {
-                console.error('DEV ONLY - Layout Error:', err);
-            }
+            console.error('Error saving layout:', err);
             if (err instanceof Error) {
                 setError(err.message);
             }
