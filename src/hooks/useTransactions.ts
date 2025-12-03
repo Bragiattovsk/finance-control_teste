@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth } from '@/contexts/auth-hooks'
 import { useQueryClient } from '@tanstack/react-query'
 
 export interface CreateTransactionInput {

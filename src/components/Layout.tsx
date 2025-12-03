@@ -2,7 +2,7 @@ import { Outlet, Link, useLocation } from "react-router-dom"
 import { LayoutDashboard, DollarSign, Settings, LogOut, CalendarClock, Layers, TrendingUp, BarChart3, Wallet } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { useAuth } from "@/contexts/AuthContext"
+import { useAuth } from "@/contexts/auth-hooks"
 import { useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 
@@ -11,7 +11,9 @@ import { ModeToggle } from "@/components/mode-toggle"
 import { FeedbackWidget } from "@/components/FeedbackWidget"
 import { BetaDisclaimerModal } from "@/components/BetaDisclaimerModal"
 import { MobileBottomNav } from "@/components/MobileBottomNav"
+import { MobileHeader } from "@/components/MobileHeader"
 import { NewTransactionModal } from "@/components/NewTransactionModal"
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt"
 
 export function Layout() {
     const { pathname } = useLocation()
@@ -96,12 +98,15 @@ export function Layout() {
                 </div>
             </aside >
 
+            <MobileHeader />
+
             {/* Main Content */}
-            <main className="flex-1 overflow-y-auto p-8 pb-24 md:pb-8 bg-background/50">
+            <main className="flex-1 overflow-y-auto p-8 pb-24 md:pb-8 pt-24 md:pt-8 bg-background/50">
                 <Outlet />
             </main>
             <FeedbackWidget />
             <BetaDisclaimerModal />
+            <PWAInstallPrompt />
             
             <MobileBottomNav 
                 onOpenNewTransaction={() => setIsMobileTransactionModalOpen(true)} 

@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react"
-import { useAuth } from "@/contexts/AuthContext"
+import { useAuth } from "@/contexts/auth-hooks"
 import { useProject } from "@/contexts/ProjectContext"
 import { useNavigate } from "react-router-dom"
 import { supabase } from "@/lib/supabase"

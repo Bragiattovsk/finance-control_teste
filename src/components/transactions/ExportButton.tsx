@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip'
 import { FileSpreadsheet, Loader2, Lock } from 'lucide-react'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth } from '@/contexts/auth-hooks'
 import type { Transaction } from '@/types'
-import * as XLSX from 'xlsx'
+import ExcelJS from 'exceljs'
 import { supabase } from '@/lib/supabase'
 
 interface ExportButtonProps {
@@ -13,7 +13,7 @@ interface ExportButtonProps {
 }
 
 export function ExportButton({ data, currentDate }: ExportButtonProps) {
-  const { profile, user } = useAuth()
+  const { profile } = useAuth()
   const isPro = profile?.subscription_tier === 'PRO'
   const [isExporting, setIsExporting] = useState(false)
 
@@ -50,49 +50,66 @@ export function ExportButton({ data, currentDate }: ExportButtonProps) {
         return { dateStr, description, category, amount, typeLabel, statusLabel, signedUrl }
       }))
 
-      const rows: (string | number)[][] = []
-      rows.push(['RELATÓRIO FINANCEIRO'])
-      rows.push(['Gerado em:', new Date().toLocaleString()])
-      rows.push(['Cliente:', user?.email || 'N/A'])
-      rows.push([])
-      rows.push(['Data', 'Descrição', 'Categoria', 'Valor', 'Tipo', 'Status', 'Comprovante'])
+      const workbook = new ExcelJS.Workbook()
+      const worksheet = workbook.addWorksheet('Relatório Financeiro')
 
-      processed.forEach((item) => {
-        rows.push([
-          item.dateStr,
-          item.description,
-          item.category,
-          item.amount,
-          item.typeLabel,
-          item.statusLabel,
-          item.signedUrl ? 'Ver Comprovante 🔗' : ''
-        ])
-      })
-
-      rows.push([])
-      rows.push(['TOTAIS:', '', '', totalReceita - totalDespesa, '', '', ''])
-
-      const ws: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet(rows)
-
-      // Column widths
-      ws['!cols'] = [
-        { wch: 12 }, { wch: 40 }, { wch: 20 }, { wch: 15 }, { wch: 10 }, { wch: 10 }, { wch: 20 }
+      worksheet.columns = [
+        { header: 'Data', key: 'data', width: 15 },
+        { header: 'Descrição', key: 'descricao', width: 40 },
+        { header: 'Categoria', key: 'categoria', width: 20 },
+        { header: 'Valor', key: 'valor', width: 15 },
+        { header: 'Tipo', key: 'tipo', width: 10 },
+        { header: 'Status', key: 'status', width: 10 },
+        { header: 'Comprovante', key: 'comprovante', width: 25 },
       ]
 
-      // Insert hyperlinks for receipts
-      processed.forEach((item, index) => {
-        if (!item.signedUrl) return
-        const cellRef = XLSX.utils.encode_cell({ r: 5 + index, c: 6 })
-        const cell = ((ws as XLSX.WorkSheet)[cellRef] as XLSX.CellObject | undefined) || { t: 's', v: 'Ver Comprovante 🔗' }
-        cell.l = { Target: item.signedUrl }
-        cell.v = 'Ver Comprovante 🔗'
-        ;(ws as XLSX.WorkSheet)[cellRef] = cell
+      processed.forEach((item) => {
+        const row = worksheet.addRow({
+          data: item.dateStr,
+          descricao: item.description,
+          categoria: item.category,
+          valor: item.amount,
+          tipo: item.typeLabel,
+          status: item.statusLabel,
+          comprovante: item.signedUrl ? 'Ver Comprovante' : '',
+        })
+        if (item.signedUrl) {
+          const cell = row.getCell('comprovante')
+          cell.value = { text: 'Ver Comprovante', hyperlink: item.signedUrl }
+          cell.font = { color: { argb: 'FF0000FF' }, underline: true }
+        }
       })
 
-      const wb = XLSX.utils.book_new()
-      XLSX.utils.book_append_sheet(wb, ws, 'Extrato')
+      // Header styling
+      worksheet.getRow(1).font = { bold: true }
+      // Currency format
+      worksheet.getColumn('valor').numFmt = '"R$"#,##0.00'
+
+      // Totais
+      const totalRow = worksheet.addRow({
+        data: '',
+        descricao: 'TOTAIS',
+        categoria: '',
+        valor: totalReceita - totalDespesa,
+        tipo: '',
+        status: '',
+        comprovante: '',
+      })
+      totalRow.font = { bold: true }
+
       const fileName = `Relatorio_Financeiro_${currentDate.toISOString().split('T')[0]}.xlsx`
-      XLSX.writeFile(wb, fileName)
+      const buffer = await workbook.xlsx.writeBuffer()
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = fileName
+      document.body.appendChild(a)
+      a.click()
+      setTimeout(() => {
+        URL.revokeObjectURL(url)
+        a.remove()
+      }, 0)
     } finally {
       setIsExporting(false)
     }

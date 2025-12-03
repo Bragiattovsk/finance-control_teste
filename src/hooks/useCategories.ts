@@ -1,20 +1,16 @@
 import { useState, useEffect, useCallback } from "react"
 import { supabase } from "@/lib/supabase"
-import { useAuth } from "@/contexts/AuthContext"
+import { useAuth } from "@/contexts/auth-hooks"
 import { useProject } from "@/contexts/ProjectContext"
 import { applyProjectScope } from "@/lib/supabase-helpers"
-import { Project } from "@/types"
+import { Project, Category } from "@/types"
 
-export interface Category {
-    id: string
-    nome: string
-    cor: string
-    is_investment?: boolean
-    goal_id?: string | null
-}
+// Using shared Category type from '@/types'
+// Extending locally with optional goal reference when present in queries
+type CategoryWithGoal = Category & { goal_id?: string | null }
 
 interface UseCategoriesReturn {
-    categories: Category[]
+    categories: CategoryWithGoal[]
     loading: boolean
     error: string | null
     refetch: () => Promise<void>
@@ -23,7 +19,7 @@ interface UseCategoriesReturn {
 export function useCategories(): UseCategoriesReturn {
     const { user } = useAuth()
     const { selectedProject } = useProject()
-    const [categories, setCategories] = useState<Category[]>([])
+    const [categories, setCategories] = useState<CategoryWithGoal[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
 
@@ -46,7 +42,7 @@ export function useCategories(): UseCategoriesReturn {
 
             if (error) throw error
 
-            setCategories(data || [])
+            setCategories((data || []) as CategoryWithGoal[])
         } catch (err) {
             console.error("Error fetching categories:", err)
             setError("Erro ao carregar categorias")

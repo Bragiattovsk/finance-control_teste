@@ -24,7 +24,6 @@ export function UpgradeModal({ open, onOpenChange }: UpgradeModalProps) {
 
     const handleUpgrade = () => {
         // Placeholder for Stripe/Checkout redirection
-        console.log("Redirecting to checkout...")
         alert("Redirecionando para o Checkout...")
     }
 

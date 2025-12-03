@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react"
 import { useCompoundInterest } from "@/hooks/useCompoundInterest"
-import { useAuth } from "@/contexts/AuthContext"
+import { useAuth } from "@/contexts/auth-hooks"
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Slider } from "@/components/ui/slider"

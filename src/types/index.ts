@@ -12,6 +12,7 @@ export interface Category {
     nome: string;
     cor: string;
     is_investment?: boolean;
+    tipo: 'income' | 'expense';
 }
 
 export interface Transaction {

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { DashboardWidgetConfig, WidgetLayout, WidgetType, WidgetSize } from '@/types/dashboard';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth-hooks';
 import { useToast } from '@/hooks/use-toast';
 import { arrayMove } from '@dnd-kit/sortable';
 
@@ -51,7 +51,9 @@ export const useDashboardWidgets = () => {
                 toast({ title: "Dashboard Inicializado", description: "Adicionamos alguns gráficos para você começar." });
             }
         } catch (error) {
-            console.error("Erro ao criar defaults:", error);
+            if (import.meta.env.DEV) {
+                console.error("DEV ERROR (Widgets):", error);
+            }
             if (error instanceof Error) {
                 setError(error.message);
             }
@@ -152,7 +154,9 @@ export const useDashboardWidgets = () => {
             await Promise.all(updates);
 
         } catch (err: unknown) {
-            console.error('Error saving layout:', err);
+            if (import.meta.env.DEV) {
+                console.error('DEV ONLY - Layout Error:', err);
+            }
             if (err instanceof Error) {
                 setError(err.message);
             }

@@ -15,7 +15,7 @@ import { ptBR } from "date-fns/locale"
 
 import { useState } from "react"
 import { MonthSelector } from "@/components/MonthSelector"
-import { useAuth } from "@/contexts/AuthContext"
+import { useAuth } from "@/contexts/auth-hooks"
 import { DashboardGrid } from "@/components/dashboard/DashboardGrid"
 import { useDashboardWidgets } from "@/hooks/useDashboardWidgets"
 import { AddWidgetDialog } from "@/components/dashboard/AddWidgetDialog"

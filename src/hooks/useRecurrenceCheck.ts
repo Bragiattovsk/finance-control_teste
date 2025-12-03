@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react"
 import { supabase } from "@/lib/supabase"
-import { useAuth } from "@/contexts/AuthContext"
+import { useAuth } from "@/contexts/auth-hooks"
 import { useProject } from "@/contexts/ProjectContext"
 import { useToast } from "@/hooks/use-toast"
 

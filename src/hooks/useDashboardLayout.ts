@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth-hooks';
 import { DashboardWidget, WidgetType } from '@/types/dashboard';
 import { useToast } from '@/hooks/use-toast';
 import debounce from 'lodash.debounce';

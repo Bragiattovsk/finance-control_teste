@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
-import { AuthProvider, PrivateRoute, ActiveAccountRoute, useAuth } from "@/contexts/AuthContext"
+import { AuthProvider, PrivateRoute, ActiveAccountRoute } from "@/contexts/AuthContext"
+import { useAuth } from "@/contexts/auth-hooks"
 import { Layout } from "@/components/Layout"
 import { ShadcnDemo } from "@/components/ShadcnDemo"
 import { Login } from "@/pages/Login"

@@ -10,10 +10,10 @@ import {
 } from "@/components/ui/select"
 import { NewProjectModal } from "@/components/NewProjectModal"
 import { UpgradeModal } from "@/components/UpgradeModal"
-import { useAuth } from "@/contexts/AuthContext"
+import { useAuth } from "@/contexts/auth-hooks"
 import { PlusCircle, User, Lock } from "lucide-react"
 
-export function ContextSwitcher() {
+export function ContextSwitcher({ className }: { className?: string }) {
     const { projects, selectedProject, selectProject } = useProject()
     const { profile } = useAuth()
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -49,7 +49,7 @@ export function ContextSwitcher() {
     return (
         <>
             <Select value={currentValue} onValueChange={handleValueChange}>
-                <SelectTrigger className="w-full">
+                <SelectTrigger className={`w-full ${className}`}>
                     <SelectValue placeholder="Selecione o contexto" />
                 </SelectTrigger>
                 <SelectContent>

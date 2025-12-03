@@ -5,8 +5,6 @@ import { Profile } from "@/types"
 import { AuthContext } from "./auth-context"
 import { useAuth } from "./auth-hooks"
 
-export { useAuth } from "./auth-hooks"
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [session, setSession] = useState<Session | null>(null)
     const [user, setUser] = useState<User | null>(null)
@@ -31,13 +29,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 .single()
 
             if (error) {
-                console.error("Error fetching profile:", error)
+                if (import.meta.env.DEV) {
+                    console.error("DEV ERROR: Error fetching profile:", error)
+                } else {
+                    console.error("Erro ao carregar perfil do usuário.")
+                }
                 return null
             }
 
             return profileData as Profile
         } catch (error) {
-            console.error("Error in fetchProfileData:", error)
+            if (import.meta.env.DEV) {
+                console.error("DEV ERROR: Error in fetchProfileData:", error)
+            } else {
+                console.error("Erro ao carregar perfil do usuário.")
+            }
             return null
         }
     }, [])

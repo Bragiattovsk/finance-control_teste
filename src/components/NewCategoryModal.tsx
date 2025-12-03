@@ -1,35 +1,32 @@
 import { useState, useEffect } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { supabase } from "@/lib/supabase"
-import { useAuth } from "@/contexts/AuthContext"
+import { useAuth } from "@/contexts/auth-hooks"
 import { Loader2 } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { useToast } from "@/hooks/use-toast"
 
-interface Category {
-    id: string
-    nome: string
-    tipo: "receita" | "despesa"
-    cor: string
-    is_investment?: boolean
-}
+import type { Category } from "@/types"
 
 interface NewCategoryModalProps {
     isOpen: boolean
     onClose: () => void
     onSuccess: (category: Category) => void
     defaultIsInvestment?: boolean
+    defaultType?: 'income' | 'expense'
 }
 
-export function NewCategoryModal({ isOpen, onClose, onSuccess, defaultIsInvestment = false }: NewCategoryModalProps) {
+export function NewCategoryModal({ isOpen, onClose, onSuccess, defaultIsInvestment = false, defaultType = 'expense' }: NewCategoryModalProps) {
     const { user } = useAuth()
+    const { toast } = useToast()
     const [loading, setLoading] = useState(false)
 
     const [name, setName] = useState("")
-    const [type, setType] = useState<"receita" | "despesa">("despesa")
+    const [type, setType] = useState<'income' | 'expense'>('expense')
     const [color, setColor] = useState("#000000")
     const [isInvestment, setIsInvestment] = useState(defaultIsInvestment)
 
@@ -56,11 +53,21 @@ export function NewCategoryModal({ isOpen, onClose, onSuccess, defaultIsInvestme
 
             if (error) throw error
 
+            toast({
+                title: "Categoria criada",
+                description: "A nova categoria foi adicionada com sucesso.",
+                variant: "default",
+            })
             onSuccess(data)
             onClose()
         } catch (error) {
             console.error("Error creating category:", error)
-            alert("Erro ao criar categoria.")
+            toast({
+                title: "Erro ao criar categoria",
+                description: "Ocorreu um erro ao tentar salvar a categoria. Tente novamente.",
+                variant: "destructive",
+                duration: 5000,
+            })
         } finally {
             setLoading(false)
         }
@@ -68,7 +75,7 @@ export function NewCategoryModal({ isOpen, onClose, onSuccess, defaultIsInvestme
 
     const resetForm = () => {
         setName("")
-        setType("despesa")
+        setType(defaultType)
         setColor("#000000")
         setIsInvestment(defaultIsInvestment)
     }
@@ -78,6 +85,9 @@ export function NewCategoryModal({ isOpen, onClose, onSuccess, defaultIsInvestme
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Nova Categoria</DialogTitle>
+                    <DialogDescription className="sr-only">
+                        Preencha os dados abaixo para criar uma nova categoria de transação.
+                    </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid gap-2">
@@ -90,16 +100,35 @@ export function NewCategoryModal({ isOpen, onClose, onSuccess, defaultIsInvestme
                         />
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="type">Tipo</Label>
-                        <Select value={type} onValueChange={(val: "receita" | "despesa") => setType(val)}>
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="receita">Receita</SelectItem>
-                                <SelectItem value="despesa">Despesa</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        <Label>Tipo</Label>
+                        <div className="grid grid-cols-2 gap-4">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className={cn(
+                                    "h-12 text-base font-medium transition-all",
+                                    type === 'income'
+                                        ? "bg-emerald-600 hover:bg-emerald-700 text-white border-transparent shadow-md"
+                                        : "hover:bg-muted text-muted-foreground"
+                                )}
+                                onClick={() => setType('income')}
+                            >
+                                Receita
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className={cn(
+                                    "h-12 text-base font-medium transition-all",
+                                    type === 'expense'
+                                        ? "bg-red-600 hover:bg-red-700 text-white border-transparent shadow-md"
+                                        : "hover:bg-muted text-muted-foreground"
+                                )}
+                                onClick={() => setType('expense')}
+                            >
+                                Despesa
+                            </Button>
+                        </div>
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="color">Cor</Label>

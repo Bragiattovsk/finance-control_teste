@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react"
 import { supabase } from "@/lib/supabase"
-import { useAuth } from "@/contexts/AuthContext"
+import { useAuth } from "@/contexts/auth-hooks"
 import { useProject } from "@/contexts/ProjectContext"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -78,6 +78,33 @@ export function NewTransactionModal({
 
     // New Category Modal State
     const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false)
+
+    const resolveCategoryTipo = (c: Category): 'income' | 'expense' => {
+        const raw = (c as unknown as { tipo?: string }).tipo
+        if (raw === 'income' || raw === 'expense') return raw
+        if (raw === 'receita') return 'income'
+        return 'expense'
+    }
+
+    const filteredCategories = categories.filter(cat => {
+        const catTipo = resolveCategoryTipo(cat)
+        const expected = type === 'receita' ? 'income' : 'expense'
+        return catTipo === expected
+    })
+
+    // Reset categoryId if the selected category doesn't match the new transaction type
+    useEffect(() => {
+        if (categoryId) {
+            const selectedCategory = categories.find(c => c.id === categoryId)
+            if (selectedCategory) {
+                const currentType = type === 'receita' ? 'income' : 'expense'
+                const selectedType = resolveCategoryTipo(selectedCategory)
+                if (selectedType !== currentType) {
+                    setCategoryId("")
+                }
+            }
+        }
+    }, [type, categoryId, categories])
 
     const fetchCategories = useCallback(async () => {
         if (!user) return
@@ -326,17 +353,31 @@ export function NewTransactionModal({
                                     <SelectValue placeholder="Selecione..." />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {categories.map((cat) => (
-                                        <SelectItem key={cat.id} value={cat.id}>
-                                            <div className="flex items-center gap-2">
-                                                <div
-                                                    className="h-3 w-3 rounded-full"
-                                                    style={{ backgroundColor: cat.cor }}
-                                                />
-                                                {cat.nome}
-                                            </div>
-                                        </SelectItem>
-                                    ))}
+                                    {filteredCategories.length > 0 ? (
+                                        filteredCategories.map((cat) => (
+                                            <SelectItem key={cat.id} value={cat.id}>
+                                                <div className="flex items-center gap-2">
+                                                    <div
+                                                        className="h-3 w-3 rounded-full"
+                                                        style={{ backgroundColor: cat.cor }}
+                                                    />
+                                                    {cat.nome}
+                                                </div>
+                                            </SelectItem>
+                                        ))
+                                    ) : (
+                                        <div className="p-4 text-center text-sm text-muted-foreground flex flex-col items-center gap-2">
+                                            <span>Nenhuma categoria de {type} encontrada.</span>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="w-full"
+                                                onClick={() => setIsCategoryModalOpen(true)}
+                                            >
+                                                Criar nova categoria
+                                            </Button>
+                                        </div>
+                                    )}
                                 </SelectContent>
                             </Select>
                             <Button
@@ -391,6 +432,7 @@ export function NewTransactionModal({
                     isOpen={isCategoryModalOpen}
                     onClose={() => setIsCategoryModalOpen(false)}
                     onSuccess={handleCategorySuccess}
+                    defaultType={type === 'receita' ? 'income' : 'expense'}
                 />
             </DialogContent>
         </Dialog>

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react"
 import { supabase } from "@/lib/supabase"
-import { useAuth } from "@/contexts/AuthContext"
+import { useAuth } from "@/contexts/auth-hooks"
 import { useProject } from "@/contexts/ProjectContext"
 import { MonthSelector } from "@/components/MonthSelector"
 import { formatCurrency } from "@/lib/format"

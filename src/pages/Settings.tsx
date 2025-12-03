@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { supabase } from "@/lib/supabase"
-import { useAuth } from "@/contexts/AuthContext"
+import { useAuth } from "@/contexts/auth-hooks"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { SecuritySettings } from "@/components/settings/SecuritySettings"
+import { usePWAInstall } from "@/hooks/usePWAInstall"
+import { Download, Share, PlusSquare } from "lucide-react"
 
 import {
     Dialog,
@@ -31,6 +33,7 @@ import {
 export function Settings() {
     const { user, signOut } = useAuth()
     const { toast } = useToast()
+    const { supportsPWA, promptInstall, isIOS, isStandalone } = usePWAInstall()
     const [loading, setLoading] = useState(false)
     const [setupLoading, setSetupLoading] = useState(false)
     const [deleteLoading, setDeleteLoading] = useState(false)
@@ -101,11 +104,11 @@ export function Settings() {
 
         try {
             const categories = [
-                { nome: "Alimentação", tipo: "despesa", cor: "red", user_id: user.id },
-                { nome: "Moradia", tipo: "despesa", cor: "orange", user_id: user.id },
-                { nome: "Lazer", tipo: "despesa", cor: "yellow", user_id: user.id },
-                { nome: "Salário", tipo: "receita", cor: "green", user_id: user.id },
-                { nome: "Investimento", tipo: "despesa", cor: "purple", user_id: user.id },
+                { nome: "Alimentação", tipo: "expense", cor: "red", user_id: user.id },
+                { nome: "Moradia", tipo: "expense", cor: "orange", user_id: user.id },
+                { nome: "Lazer", tipo: "expense", cor: "yellow", user_id: user.id },
+                { nome: "Salário", tipo: "income", cor: "green", user_id: user.id },
+                { nome: "Investimento", tipo: "expense", cor: "purple", user_id: user.id },
             ]
 
             const { data: existing } = await supabase
@@ -176,6 +179,43 @@ export function Settings() {
         <div className="space-y-8">
             <h1 className="text-3xl font-bold">Configurações</h1>
 
+            {!isStandalone && (supportsPWA || isIOS) && (
+                <Card className="rounded-xl border-purple-500/30 bg-purple-500/5 shadow-sm">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Download className="h-5 w-5 text-purple-500" />
+                            Instalar Aplicativo
+                        </CardTitle>
+                        <CardDescription>
+                            Instale o Finance Control para um acesso mais rápido e melhor experiência.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {supportsPWA ? (
+                            <Button 
+                                onClick={promptInstall} 
+                                className="w-full sm:w-auto gap-2 bg-purple-600 hover:bg-purple-700 text-white"
+                            >
+                                <Download className="h-4 w-4" />
+                                Instalar App
+                            </Button>
+                        ) : isIOS ? (
+                            <div className="space-y-3 text-sm text-muted-foreground bg-background/50 p-4 rounded-lg border border-border/50">
+                                <p className="font-medium text-foreground">Como instalar no iPhone:</p>
+                                <div className="flex items-center gap-3">
+                                    <Share className="h-4 w-4 text-blue-500" />
+                                    <span>Toque no botão <strong>Compartilhar</strong> no navegador</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <PlusSquare className="h-4 w-4 text-foreground" />
+                                    <span>Selecione <strong>Adicionar à Tela de Início</strong></span>
+                                </div>
+                            </div>
+                        ) : null}
+                    </CardContent>
+                </Card>
+            )}
+
             <Card className="rounded-xl border-border/50 bg-card shadow-sm">
                 <CardHeader>
                     <CardTitle>Investimentos</CardTitle>
@@ -219,7 +259,7 @@ export function Settings() {
             </Card>
 
             <SecuritySettings />
-            
+
             <Card className="rounded-xl border-border/50 bg-card shadow-sm">
                 <CardHeader>
                     <CardTitle>Configuração Inicial</CardTitle>

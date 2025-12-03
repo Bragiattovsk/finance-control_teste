@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Checkbox } from '../ui/checkbox';
 import { ChartType, WidgetType, WidgetSize } from '../../types/dashboard';
 import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth-hooks';
 import { Square, RectangleHorizontal, Maximize } from 'lucide-react';
 import { cn } from '@/lib/utils';
 

@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth } from '@/contexts/auth-hooks'
 
 export type FeedbackType = 'bug' | 'idea' | 'ui' | 'other'
 

@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 import imageCompression from 'browser-image-compression'
 import { supabase } from '@/lib/supabase'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth } from '@/contexts/auth-hooks'
 
 export function useReceiptUpload() {
   const { user } = useAuth()

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react"
 import { supabase } from "@/lib/supabase"
-import { useAuth } from "@/contexts/AuthContext"
+import { useAuth } from "@/contexts/auth-hooks"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -14,20 +14,19 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Trash2, TrendingUp, TrendingDown, DollarSign, Search, ChevronLeft, ChevronRight } from "lucide-react"
 import { NewCategoryModal } from "@/components/NewCategoryModal"
+import { ConfirmModal } from "@/components/ConfirmModal"
+import { useToast } from "@/hooks/use-toast"
+import type { Category } from "@/types"
 
-interface Category {
-    id: string
-    nome: string
-    tipo: "receita" | "despesa"
-    cor: string
-    is_investment?: boolean
-}
 
 export function Categories() {
     const { user } = useAuth()
+    const { toast } = useToast()
     const [categories, setCategories] = useState<Category[]>([])
     const [loading, setLoading] = useState(true)
     const [isModalOpen, setIsModalOpen] = useState(false)
+    const [deleteId, setDeleteId] = useState<string | null>(null)
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false)
     
     // Pagination and Search state
     const [searchTerm, setSearchTerm] = useState("")
@@ -57,20 +56,60 @@ export function Categories() {
         fetchCategories()
     }, [fetchCategories])
 
-    const handleDelete = async (id: string) => {
-        if (!confirm("Tem certeza que deseja excluir esta categoria? Se houver transações vinculadas, elas ficarão sem categoria.")) return
+    // Fix "Salário" category automatically
+    useEffect(() => {
+        const fixSalario = async () => {
+            const salario = categories.find(c => c.nome.toLowerCase() === 'salário' || c.nome.toLowerCase() === 'salario')
+            if (!salario) return
+            const raw = (salario as unknown as { tipo?: string }).tipo
+            const resolved = raw === 'income' ? 'income' : raw === 'receita' ? 'income' : 'expense'
+            if (resolved === 'expense') {
+                const { error } = await supabase
+                    .from('categories')
+                    .update({ tipo: 'income' })
+                    .eq('id', salario.id)
+                if (!error) {
+                    fetchCategories()
+                }
+            }
+        }
+        if (categories.length > 0) {
+            fixSalario()
+        }
+    }, [categories, fetchCategories])
+
+    const handleDelete = (id: string) => {
+        setDeleteId(id)
+        setIsConfirmOpen(true)
+    }
+
+    const confirmDelete = async () => {
+        if (!deleteId) return
 
         try {
             const { error } = await supabase
                 .from("categories")
                 .delete()
-                .eq("id", id)
+                .eq("id", deleteId)
 
             if (error) throw error
+            
+            toast({
+                title: "Categoria excluída",
+                description: "A categoria foi excluída com sucesso.",
+            })
             fetchCategories()
         } catch (error) {
             console.error("Error deleting category:", error)
-            alert("Erro ao excluir categoria.")
+            toast({
+                title: "Erro ao excluir",
+                description: "Não foi possível excluir a categoria. Verifique se existem transações vinculadas.",
+                variant: "destructive",
+                duration: 5000,
+            })
+        } finally {
+            setDeleteId(null)
+            setIsConfirmOpen(false)
         }
     }
 
@@ -120,6 +159,13 @@ export function Categories() {
                         fetchCategories()
                     }}
                 />
+                <ConfirmModal
+                    isOpen={isConfirmOpen}
+                    onOpenChange={setIsConfirmOpen}
+                    onConfirm={confirmDelete}
+                    title="Confirmar exclusão"
+                    description="Tem certeza que deseja excluir esta categoria?"
+                />
             </div>
 
             <div className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden">
@@ -136,24 +182,30 @@ export function Categories() {
                     <TableBody>
                         {paginatedCategories.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
+                                <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">
                                     {searchTerm ? "Nenhuma categoria encontrada." : "Nenhuma categoria cadastrada."}
                                 </TableCell>
                             </TableRow>
                         ) : (
                             paginatedCategories.map((category) => (
                                 <TableRow key={category.id} className="hover:bg-muted/30 border-border/40 transition-colors">
-                                    <TableCell className="font-medium text-foreground">{category.nome}</TableCell>
+                                    <TableCell className="font-medium text-foreground">
+                                        {category.nome}
+                                    </TableCell>
                                     <TableCell>
-                                        {category.tipo === "receita" ? (
-                                            <Badge className="bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border-none gap-1">
-                                                <TrendingUp className="h-3 w-3" /> Receita
-                                            </Badge>
-                                        ) : (
-                                            <Badge className="bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 border-none gap-1">
-                                                <TrendingDown className="h-3 w-3" /> Despesa
-                                            </Badge>
-                                        )}
+                                        {(() => {
+                                            const tipo = (category as unknown as { tipo?: string }).tipo
+                                            const isIncome = tipo === 'income' || tipo === 'receita'
+                                            return isIncome ? (
+                                                <Badge className="bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border-none gap-1">
+                                                    <TrendingUp className="h-3 w-3" /> Entrada
+                                                </Badge>
+                                            ) : (
+                                                <Badge className="bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 border-none gap-1">
+                                                    <TrendingDown className="h-3 w-3" /> Saída
+                                                </Badge>
+                                            )
+                                        })()}
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex items-center gap-2">
