@@ -3,15 +3,27 @@ import { LayoutDashboard, DollarSign, Settings, LogOut, CalendarClock, Layers, T
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/contexts/AuthContext"
+import { useState } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 
 import { ContextSwitcher } from "@/components/ContextSwitcher"
 import { ModeToggle } from "@/components/mode-toggle"
 import { FeedbackWidget } from "@/components/FeedbackWidget"
 import { BetaDisclaimerModal } from "@/components/BetaDisclaimerModal"
+import { MobileBottomNav } from "@/components/MobileBottomNav"
+import { NewTransactionModal } from "@/components/NewTransactionModal"
 
 export function Layout() {
     const { pathname } = useLocation()
     const { signOut, profile } = useAuth()
+    const [isMobileTransactionModalOpen, setIsMobileTransactionModalOpen] = useState(false)
+    const queryClient = useQueryClient()
+
+    const handleTransactionSuccess = () => {
+        queryClient.invalidateQueries({ queryKey: ['transactions'] })
+        queryClient.invalidateQueries({ queryKey: ['analytics'] })
+        queryClient.invalidateQueries({ queryKey: ['investment'] })
+    }
 
     const navItems = [
         { href: "/", icon: LayoutDashboard, label: "Dashboard" },
@@ -85,11 +97,20 @@ export function Layout() {
             </aside >
 
             {/* Main Content */}
-            <main className="flex-1 overflow-y-auto p-8 bg-background/50">
+            <main className="flex-1 overflow-y-auto p-8 pb-24 md:pb-8 bg-background/50">
                 <Outlet />
             </main>
             <FeedbackWidget />
             <BetaDisclaimerModal />
+            
+            <MobileBottomNav 
+                onOpenNewTransaction={() => setIsMobileTransactionModalOpen(true)} 
+            />
+            <NewTransactionModal 
+                open={isMobileTransactionModalOpen} 
+                onOpenChange={setIsMobileTransactionModalOpen}
+                onSuccess={handleTransactionSuccess}
+            />
         </div>
     )
 }

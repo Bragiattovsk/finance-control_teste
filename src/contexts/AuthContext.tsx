@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useRef, useCallback } from "react"
-import { Session, User, AuthChangeEvent } from "@supabase/supabase-js"
+import { Session, User } from "@supabase/supabase-js"
 import { supabase } from "@/lib/supabase"
 import { Profile } from "@/types"
 import { AuthContext } from "./auth-context"
@@ -94,10 +94,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         const {
             data: { subscription },
-        } = supabase.auth.onAuthStateChange((
-            _event: AuthChangeEvent,
-            _session: Session | null
-        ) => {
+        } = supabase.auth.onAuthStateChange((_event, _session) => {
             // Prevent unnecessary re-renders/loading state on tab switch or token refresh
             if ((_event === "SIGNED_IN" || _event === "TOKEN_REFRESHED") && _session?.user?.id === userRef.current?.id) {
                 setSession(_session)

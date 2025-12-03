@@ -29,6 +29,7 @@ export interface Transaction {
     installment_number?: number | null;
     total_installments?: number | null;
     projects?: Project | null;
+    attachment_path?: string | null;
 }
 
 export interface Profile {

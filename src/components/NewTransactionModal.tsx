@@ -24,6 +24,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle, PlusCircle, Plus } from "lucide-react"
 import { NewCategoryModal } from "@/components/NewCategoryModal"
+import { AttachmentInput } from "@/components/AttachmentInput"
 
 import { Transaction, Category } from "@/types"
 import { Switch } from "@/components/ui/switch"
@@ -48,7 +49,7 @@ export function NewTransactionModal({
     defaultCategoryId,
     isInvestmentMode = false
 }: NewTransactionModalProps) {
-    const { user } = useAuth()
+    const { user, profile } = useAuth()
     const { selectedProject } = useProject()
     const [internalOpen, setInternalOpen] = useState(false)
     const isControlled = controlledOpen !== undefined
@@ -73,6 +74,7 @@ export function NewTransactionModal({
     const [isPaid, setIsPaid] = useState(true)
     const [isInstallment, setIsInstallment] = useState(false)
     const [installments, setInstallments] = useState<string>("2")
+    const [attachmentPath, setAttachmentPath] = useState<string | null>(null)
 
     // New Category Modal State
     const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false)
@@ -100,6 +102,7 @@ export function NewTransactionModal({
         setCategoryId("")
         setDate(new Date().toISOString().split("T")[0])
         setIsPaid(true)
+        setAttachmentPath(null)
     }, [isInvestmentMode])
 
     useEffect(() => {
@@ -112,6 +115,7 @@ export function NewTransactionModal({
                 setCategoryId(transactionToEdit.categoria_id || "")
                 setDate(transactionToEdit.data)
                 setIsPaid(transactionToEdit.pago)
+                setAttachmentPath(transactionToEdit.attachment_path || null)
             } else {
                 resetForm()
                 if (defaultCategoryId) {
@@ -143,7 +147,8 @@ export function NewTransactionModal({
                 categoria_id: categoryId || null,
                 data: date,
                 pago: isPaid,
-                project_id: selectedProject?.id ?? null
+                project_id: selectedProject?.id ?? null,
+                attachment_path: attachmentPath
             }
 
             let opError
@@ -209,6 +214,8 @@ export function NewTransactionModal({
         setCategoryId(newCategory.id)
     }
 
+    const isPro = profile?.subscription_tier === 'PRO'
+
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             {!isControlled && (
@@ -219,7 +226,7 @@ export function NewTransactionModal({
                     </Button>
                 </DialogTrigger>
             )}
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>{getTitle()}</DialogTitle>
                     <DialogDescription>
@@ -352,6 +359,16 @@ export function NewTransactionModal({
                             value={date}
                             onChange={(e) => setDate(e.target.value)}
                             required
+                        />
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label>Comprovante</Label>
+                        <AttachmentInput
+                            value={attachmentPath}
+                            onChange={setAttachmentPath}
+                            isPro={isPro}
+                            transactionId={transactionToEdit?.id}
                         />
                     </div>
 

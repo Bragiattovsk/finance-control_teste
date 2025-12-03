@@ -87,9 +87,9 @@ export function InvestmentSimulator() {
 
   return (
     <TooltipProvider>
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-in fade-in duration-500">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in duration-500">
         {/* Sidebar - Parameters */}
-        <div className="lg:col-span-4 space-y-6">
+        <div className="lg:col-span-1 space-y-6">
           <Card className="border-border/50 shadow-sm h-full">
             <CardHeader className="pb-4">
               <CardTitle className="text-xl flex items-center gap-2">
@@ -166,7 +166,7 @@ export function InvestmentSimulator() {
                       type="number" 
                       value={initialAmount} 
                       onChange={(e) => setInitialAmount(Number(e.target.value || 0))}
-                      className="pl-9" 
+                      className="pl-9 h-12 md:h-10" 
                     />
                   </div>
                 </div>
@@ -180,7 +180,7 @@ export function InvestmentSimulator() {
                       type="number" 
                       value={monthlyContribution} 
                       onChange={(e) => setMonthlyContribution(Number(e.target.value || 0))}
-                      className="pl-9"
+                      className="pl-9 h-12 md:h-10"
                     />
                   </div>
                 </div>
@@ -213,7 +213,7 @@ export function InvestmentSimulator() {
                         step="0.1" 
                         value={annualInterestRate} 
                         onChange={(e) => setAnnualInterestRate(Number(e.target.value || 0))}
-                        className="pr-8"
+                        className="pr-8 h-12 md:h-10"
                       />
                       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">%</span>
                     </div>
@@ -231,9 +231,9 @@ export function InvestmentSimulator() {
                     )}
 
                     <Tabs value={rateMode === "FIXED" ? "fixed" : "cdi"} onValueChange={(v) => setRateMode(v === "fixed" ? "FIXED" : "CDI")} className="w-full">
-                      <TabsList className="w-full grid grid-cols-2">
-                        <TabsTrigger value="fixed">Taxa Fixa</TabsTrigger>
-                        <TabsTrigger value="cdi">% do CDI</TabsTrigger>
+                      <TabsList className="w-full grid grid-cols-1 xs:grid-cols-2 h-auto">
+                        <TabsTrigger value="fixed" className="h-9">Taxa Fixa</TabsTrigger>
+                        <TabsTrigger value="cdi" className="h-9">% do CDI</TabsTrigger>
                       </TabsList>
                       
                       <TabsContent value="fixed" className="space-y-3 mt-3">
@@ -256,15 +256,15 @@ export function InvestmentSimulator() {
                         </div>
                         <div className="space-y-2">
                           <Label>Valor da Taxa</Label>
-                          <Input type="number" step="0.1" value={annualInterestRate} onChange={(e) => setAnnualInterestRate(Number(e.target.value || 0))} />
+                          <Input type="number" step="0.1" value={annualInterestRate} onChange={(e) => setAnnualInterestRate(Number(e.target.value || 0))} className="h-12 md:h-10" />
                         </div>
                       </TabsContent>
 
                       <TabsContent value="cdi" className="space-y-3 mt-3">
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
                           <div className="space-y-2">
                             <Label className="flex items-center gap-1 h-5">% do CDI</Label>
-                            <Input type="number" value={cdiPercent} onChange={(e) => setCdiPercent(Number(e.target.value || 0))} />
+                            <Input type="number" value={cdiPercent} onChange={(e) => setCdiPercent(Number(e.target.value || 0))} className="h-12 md:h-10" />
                           </div>
                           <div className="space-y-2">
                             <Label className="flex items-center gap-1 h-5">
@@ -276,6 +276,7 @@ export function InvestmentSimulator() {
                               step="0.01" 
                               value={cdiValue} 
                               onChange={(e) => { setCdiValue(Number(e.target.value || 0)); setRateSource("MANUAL") }} 
+                              className="h-12 md:h-10"
                             />
                           </div>
                         </div>
@@ -324,7 +325,7 @@ export function InvestmentSimulator() {
         </div>
 
         {/* Main Content - Results */}
-        <div className="lg:col-span-8 space-y-6">
+        <div className="lg:col-span-2 space-y-6">
           {/* KPI Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Card className="bg-card/50 border-border/50">
@@ -384,7 +385,7 @@ export function InvestmentSimulator() {
               <CardTitle className="text-base font-medium">Evolução Patrimonial</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-[350px] w-full">
+              <div className="h-[250px] md:h-[350px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={graphData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                     <defs>

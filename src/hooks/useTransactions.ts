@@ -50,6 +50,25 @@ export function useTransactions() {
     async (id: string) => {
       if (!user) throw new Error('Usuário não autenticado')
       try {
+        // Try to delete attached receipt from storage first (best-effort)
+        try {
+          const { data: attachmentRow } = await supabase
+            .from('transactions')
+            .select('attachment_path')
+            .eq('id', id)
+            .single()
+
+          const path = (attachmentRow as { attachment_path?: string | null } | null)?.attachment_path
+          if (path) {
+            const { error: storageError } = await supabase.storage.from('receipts').remove([path])
+            if (storageError) {
+              console.warn('Falha ao deletar arquivo do storage:', storageError.message)
+            }
+          }
+        } catch {
+          console.warn('Falha ao buscar/remover attachment antes do delete da transação')
+        }
+
         const { error } = await supabase.from('transactions').delete().eq('id', id)
         if (error) throw error
         queryClient.invalidateQueries({ queryKey: ['transactions'] })
@@ -65,6 +84,29 @@ export function useTransactions() {
     async (recurrenceId: string, startInstallment: number) => {
       if (!user) throw new Error('Usuário não autenticado')
       try {
+        // Best-effort storage cleanup for affected installments
+        try {
+          const { data: files } = await supabase
+            .from('transactions')
+            .select('attachment_path')
+            .eq('recurrence_id', recurrenceId)
+            .gte('installment_number', startInstallment)
+            .not('attachment_path', 'is', null)
+
+          const paths = (files || [])
+            .map((f: { attachment_path?: string | null }) => f.attachment_path)
+            .filter((p): p is string => typeof p === 'string')
+
+          if (paths.length > 0) {
+            const { error: storageError } = await supabase.storage.from('receipts').remove(paths)
+            if (storageError) {
+              console.warn('Falha ao deletar arquivos em lote do storage:', storageError.message)
+            }
+          }
+        } catch {
+          console.warn('Falha ao buscar/remover attachments antes da exclusão de parcelas futuras')
+        }
+
         const { error } = await supabase.rpc('delete_future_installments', {
           p_recurrence_id: recurrenceId,
           p_start_installment: startInstallment,
