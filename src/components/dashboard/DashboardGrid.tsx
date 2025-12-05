@@ -61,7 +61,7 @@ function SortableWidget({ widget, isEditing, isPro, onRemoveRequest, currentDate
             ref={setNodeRef}
             style={style}
             className={cn(
-                "bg-card dark:bg-gray-800 rounded-xl shadow-sm border border-border/50 overflow-hidden flex flex-col relative group transition-shadow hover:shadow-md h-full",
+                "bg-zinc-900 rounded-xl shadow-lg border border-white/20 md:border-white/10 overflow-hidden flex flex-col relative group transition-shadow hover:shadow-xl h-full",
                 sizeClass,
                 isEditing && "ring-2 ring-primary/20",
                 isDragging && "opacity-50 shadow-xl ring-2 ring-primary scale-[1.02]"

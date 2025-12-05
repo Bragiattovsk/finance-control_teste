@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
 import { supabase } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -65,11 +65,11 @@ export function Login() {
                     <div className="flex flex-col items-center justify-center mb-6 space-y-3">
                         <img 
                             src="/favicon.svg" 
-                            alt="Nexo Logo" 
+                            alt="Lumie Logo" 
                             className="h-12 w-12 rounded-full object-cover shadow-md" 
                         />
                         <div className="flex flex-col items-center leading-none">
-                            <span className="text-2xl font-bold text-primary">Nexo</span>
+                            <span className="text-2xl font-bold text-primary">Lumie</span>
                             <span className="text-xs font-normal text-muted-foreground tracking-widest">FINANCE CONTROL</span>
                         </div>
                     </div>
@@ -148,7 +148,14 @@ export function Login() {
                         </Button>
                     </form>
                 </CardContent>
-                <CardFooter className="hidden"></CardFooter>
+                <CardFooter className="flex items-center justify-center">
+                    <p className="text-sm text-muted-foreground">
+                        Ainda não tem conta? {" "}
+                        <Link to="/register" className="text-violet-400 hover:text-violet-300 hover:underline">
+                            Cadastre-se
+                        </Link>
+                    </p>
+                </CardFooter>
             </Card>
         </div>
     )

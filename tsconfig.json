@@ -29,6 +29,8 @@
     }
   },
   "include": [
-    "src"
+    "src",
+    "supabase/functions/**/*.ts",
+    "supabase/functions/**/*.d.ts"
   ]
 }

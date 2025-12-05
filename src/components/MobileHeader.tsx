@@ -9,7 +9,7 @@ export function MobileHeader() {
             <div className="flex items-center gap-3 flex-1 max-w-[70%]">
                 <img 
                     src="/favicon.svg" 
-                    alt="Nexo Logo" 
+                    alt="Lumie Logo" 
                     className="h-8 w-8 rounded-full object-cover shadow-sm" 
                 />
                 <div className="flex-1">

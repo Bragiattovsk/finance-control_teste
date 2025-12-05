@@ -44,11 +44,11 @@ export function Layout() {
                 <div className="mb-6 flex items-center px-2 gap-[15px]">
                     <img 
                         src="/favicon.svg" 
-                        alt="Nexo Logo" 
+                        alt="Lumie Logo" 
                         className="h-10 w-10 rounded-full object-cover shadow-md" 
                     />
                     <div className="flex flex-col items-start leading-none">
-                        <span className="text-xl font-bold text-primary">Nexo</span>
+                        <span className="text-xl font-bold text-primary">Lumie</span>
                         <span className="text-[10px] font-normal text-muted-foreground tracking-widest">FINANCE CONTROL</span>
                     </div>
                 </div>

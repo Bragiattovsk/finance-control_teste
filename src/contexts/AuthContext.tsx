@@ -137,7 +137,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         const profileData = await fetchProfileData(user.id)
         if (profileData) {
-            console.log("Profile Refreshed:", profileData) // Debug log
             setProfile(profileData)
         }
     }, [user, fetchProfileData])

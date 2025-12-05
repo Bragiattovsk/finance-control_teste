@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button"
 import { Trash2, Pencil, Paperclip } from "lucide-react"
 import { NewTransactionModal } from "@/components/NewTransactionModal"
 import { ExportButton } from "@/components/transactions/ExportButton"
+import { ExportReportModal } from "@/components/transactions/ExportReportModal"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { MonthSelector } from "@/components/MonthSelector"
@@ -40,6 +41,7 @@ export function Transactions() {
     const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null)
     const { deleteTransaction, deleteFutureInstallments } = useTransactions()
     const [viewingReceiptPath, setViewingReceiptPath] = useState<string | null>(null)
+    const [isExportModalOpen, setIsExportModalOpen] = useState(false)
 
     const fetchTransactions = useCallback(async () => {
         if (!user) return
@@ -182,7 +184,7 @@ export function Transactions() {
                         Nova Transação
                     </Button>
                     <div className="w-full md:w-auto">
-                        <ExportButton data={transactions} currentDate={currentDate} />
+                        <ExportButton onClick={() => setIsExportModalOpen(true)} />
                     </div>
                 </div>
             </div>
@@ -362,6 +364,11 @@ export function Transactions() {
                 onDeleteFuture={handleDeleteFuture}
                 installmentNumber={transactionToDelete?.installment_number ?? null}
                 totalInstallments={transactionToDelete?.total_installments ?? null}
+            />
+
+            <ExportReportModal
+                isOpen={isExportModalOpen}
+                onClose={() => setIsExportModalOpen(false)}
             />
         </div>
     )

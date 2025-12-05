@@ -13,7 +13,7 @@ import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { MonthSelector } from "@/components/MonthSelector"
 import { useAuth } from "@/contexts/auth-hooks"
 import { DashboardGrid } from "@/components/dashboard/DashboardGrid"
@@ -22,6 +22,7 @@ import { AddWidgetDialog } from "@/components/dashboard/AddWidgetDialog"
 import { WidgetType, WidgetSize } from "@/types/dashboard"
 
 import { UpgradeModal } from "@/components/UpgradeModal"
+import { useToast } from "@/hooks/use-toast"
 export function Dashboard() {
     const [currentDate, setCurrentDate] = useState(new Date())
     const [isTransferModalOpen, setIsTransferModalOpen] = useState(false)
@@ -31,12 +32,32 @@ export function Dashboard() {
     useRecurrenceCheck(refetch)
 
     const { profile } = useAuth()
+    const { refreshProfile } = useAuth()
     const isPro = profile?.subscription_tier === 'PRO'
+    const { toast } = useToast()
 
     const { widgets, loading: widgetsLoading, addWidget, deleteWidget, reorderWidgets, refresh } = useDashboardWidgets()
     const [isEditing, setIsEditing] = useState(false)
     const [isAddWidgetOpen, setIsAddWidgetOpen] = useState(false)
     const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false)
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search)
+        const success = params.get('success')
+        const canceled = params.get('canceled')
+        if (success === 'true') {
+            toast({ title: 'Parabéns!', description: 'Sua conta PRO foi ativada.' })
+            refreshProfile()
+            const url = new URL(window.location.href)
+            url.searchParams.delete('success')
+            window.history.replaceState({}, '', url.toString())
+        } else if (canceled === 'true') {
+            toast({ title: 'Pagamento cancelado', description: 'Você pode tentar novamente quando quiser.' })
+            const url = new URL(window.location.href)
+            url.searchParams.delete('canceled')
+            window.history.replaceState({}, '', url.toString())
+        }
+    }, [toast, refreshProfile])
 
     const handleAddWidgetClick = () => {
         if (isPro) {
@@ -92,30 +113,25 @@ export function Dashboard() {
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 {/* 1. Saldo Atual (Destaque) */}
                 <Card className={cn(
-                    "rounded-xl shadow-md hover:shadow-lg transition-all duration-200 border-none relative overflow-hidden group",
-                    walletBalance > 0 ? "bg-primary text-primary-foreground" : 
-                    walletBalance < 0 ? "bg-red-500 text-white" : 
-                    "bg-muted text-muted-foreground"
+                    "rounded-xl shadow-md hover:shadow-lg transition-all duration-200 border relative overflow-hidden group",
+                    walletBalance > 0 ? "bg-emerald-500/10 border-emerald-500/20" : 
+                    walletBalance < 0 ? "bg-red-500/10 border-red-500/20" : 
+                    "bg-zinc-500/10 border-zinc-500/20"
                 )}>
                     <div className={cn(
-                        "absolute right-0 top-0 h-32 w-32 translate-x-8 -translate-y-8 rounded-full blur-2xl transition-all duration-500",
-                        walletBalance > 0 ? "bg-white/10 group-hover:bg-white/20" :
-                        walletBalance < 0 ? "bg-white/10 group-hover:bg-white/20" :
-                        "bg-black/5 dark:bg-white/5"
+                        "absolute right-0 top-0 h-32 w-32 translate-x-8 -translate-y-8 rounded-full blur-3xl transition-all duration-500 opacity-20",
+                        walletBalance > 0 ? "bg-emerald-500" :
+                        walletBalance < 0 ? "bg-red-500" :
+                        "bg-zinc-500"
                     )}></div>
+                    
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
                         <div className="flex items-center gap-2">
-                            <CardTitle className={cn(
-                                "text-sm font-medium",
-                                walletBalance !== 0 ? "text-primary-foreground/90" : "text-muted-foreground"
-                            )}>Saldo em Conta</CardTitle>
+                            <CardTitle className="text-sm font-medium text-muted-foreground">Saldo em Conta</CardTitle>
                             <TooltipProvider>
                                 <Tooltip>
                                     <TooltipTrigger>
-                                        <Info className={cn(
-                                            "h-3.5 w-3.5 cursor-help",
-                                            walletBalance !== 0 ? "text-primary-foreground/70 hover:text-white" : "text-muted-foreground/70 hover:text-foreground"
-                                        )} />
+                                        <Info className="h-3.5 w-3.5 cursor-help text-muted-foreground/70 hover:text-foreground" />
                                     </TooltipTrigger>
                                     <TooltipContent>
                                         <p>Soma de todas as suas receitas menos despesas desde o início</p>
@@ -125,22 +141,30 @@ export function Dashboard() {
                         </div>
                         <div className={cn(
                             "p-2 rounded-lg backdrop-blur-sm",
-                            walletBalance !== 0 ? "bg-white/20" : "bg-black/5 dark:bg-white/10"
+                             walletBalance > 0 ? "bg-emerald-500/10" :
+                             walletBalance < 0 ? "bg-red-500/10" :
+                             "bg-zinc-500/10"
                         )}>
                             <Wallet className={cn(
                                 "h-4 w-4",
-                                walletBalance !== 0 ? "text-white" : "text-muted-foreground"
+                                walletBalance > 0 ? "text-emerald-500" :
+                                walletBalance < 0 ? "text-red-500" :
+                                "text-foreground"
                             )} />
                         </div>
                     </CardHeader>
                     <CardContent className="relative z-10">
                         <div className={cn(
                             "text-2xl font-bold",
-                            walletBalance !== 0 ? "text-white" : "text-foreground"
+                            walletBalance > 0 ? "text-emerald-500" :
+                            walletBalance < 0 ? "text-red-500" :
+                            "text-foreground"
                         )}>{formatCurrency(walletBalance)}</div>
                         <p className={cn(
                             "text-xs mt-1 font-medium",
-                            walletBalance !== 0 ? "text-primary-foreground/80" : "text-muted-foreground"
+                            walletBalance > 0 ? "text-emerald-600/80 dark:text-emerald-400/80" :
+                            walletBalance < 0 ? "text-red-600/80 dark:text-red-400/80" :
+                            "text-muted-foreground"
                         )}>
                             Acumulado total
                         </p>

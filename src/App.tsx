@@ -25,9 +25,15 @@ const Recurrences = lazy(() => import("@/pages/Recurrences").then(module => ({ d
 const Categories = lazy(() => import("@/pages/Categories").then(module => ({ default: module.Categories })))
 const InvestmentsPage = lazy(() => import("@/pages/InvestmentsPage").then(module => ({ default: module.InvestmentsPage })))
 const Settings = lazy(() => import("@/pages/Settings").then(module => ({ default: module.Settings })))
+const LandingPage = lazy(() => import("@/pages/LandingPage").then(module => ({ default: module.default })))
+const RegisterPage = lazy(() => import("@/pages/Register").then(module => ({ default: module.Register })))
+const TermsPage = lazy(() => import("@/pages/Terms").then(module => ({ default: module.TermsPage })))
+const PrivacyPage = lazy(() => import("@/pages/Privacy").then(module => ({ default: module.PrivacyPage })))
+const AboutPage = lazy(() => import("@/pages/About").then(module => ({ default: module.AboutPage })))
+const ContactPage = lazy(() => import("@/pages/Contact").then(module => ({ default: module.ContactPage })))
 
 function AppRoutes() {
-  const { loading } = useAuth()
+  const { loading, user } = useAuth()
 
   if (loading) {
     return (
@@ -41,7 +47,32 @@ function AppRoutes() {
   return (
     <Suspense fallback={<Loading />}>
       <Routes>
-        <Route path="/login" element={<Login />} />
+        {/* Public root: if logado, vai para dashboard; senão, mostra Landing */}
+        <Route
+          path="/"
+          element={user ? <Navigate to="/dashboard" replace /> : <LandingPage />}
+        />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        {/* Login/Auth: se logado, redireciona para dashboard */}
+        <Route
+          path="/login"
+          element={user ? <Navigate to="/dashboard" replace /> : <Login />}
+        />
+        <Route
+          path="/auth"
+          element={user ? <Navigate to="/dashboard" replace /> : <Login />}
+        />
+        <Route
+          path="/register"
+          element={user ? <Navigate to="/dashboard" replace /> : <RegisterPage />}
+        />
+        <Route
+          path="/auth"
+          element={user ? <Navigate to="/dashboard" replace /> : <Login />}
+        />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/update-password" element={<UpdatePasswordPage />} />
         <Route
@@ -52,6 +83,7 @@ function AppRoutes() {
             </PrivateRoute>
           }
         />
+        {/* Protected app layout and routes */}
         <Route
           path="/"
           element={
@@ -60,7 +92,7 @@ function AppRoutes() {
             </ActiveAccountRoute>
           }
         >
-          <Route index element={<Dashboard />} />
+          <Route path="dashboard" element={<Dashboard />} />
           <Route path="analytics" element={<AnalyticsPage />} />
           <Route path="transactions" element={<Transactions />} />
           <Route path="recurrences" element={<Recurrences />} />
@@ -68,7 +100,7 @@ function AppRoutes() {
           <Route path="investments" element={<InvestmentsPage />} />
           <Route path="settings" element={<Settings />} />
           <Route path="demo" element={<ShadcnDemo />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>
       </Routes>
     </Suspense>

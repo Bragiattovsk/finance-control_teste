@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/auth-hooks'
 export function useReceiptUpload() {
   const { user } = useAuth()
   const [isUploading, setIsUploading] = useState(false)
+  const [isCompressing, setIsCompressing] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const uploadReceipt = useCallback(async (file: File, transactionId?: string) => {
@@ -19,11 +20,16 @@ export function useReceiptUpload() {
       let blob: Blob = file
 
       if (mime.startsWith('image/')) {
+        if (file.size > 10 * 1024 * 1024) {
+          throw new Error('A imagem deve ter no máximo 10MB')
+        }
+        setIsCompressing(true)
         blob = await imageCompression(file, {
           maxSizeMB: 0.3,
           maxWidthOrHeight: 1920,
           useWebWorker: true,
         })
+        setIsCompressing(false)
       } else if (mime === 'application/pdf') {
         if (file.size > 2 * 1024 * 1024) {
           throw new Error('PDF deve ter no máximo 2MB')
@@ -49,10 +55,11 @@ export function useReceiptUpload() {
       setError(message)
       throw err
     } finally {
+      setIsCompressing(false)
       setIsUploading(false)
     }
   }, [user])
 
-  return { uploadReceipt, isUploading, error }
+  return { uploadReceipt, isUploading, isCompressing, error }
 }
 

@@ -8,6 +8,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog"
 import { Check, Rocket } from "lucide-react"
+import { useCheckout } from "@/hooks/useCheckout"
 
 interface UpgradeModalProps {
     open: boolean
@@ -22,10 +23,7 @@ export function UpgradeModal({ open, onOpenChange }: UpgradeModalProps) {
         "(Em breve) Cálculo Automático de Impostos",
     ]
 
-    const handleUpgrade = () => {
-        // Placeholder for Stripe/Checkout redirection
-        alert("Redirecionando para o Checkout...")
-    }
+    const { handleSubscribe, loading } = useCheckout()
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -52,8 +50,8 @@ export function UpgradeModal({ open, onOpenChange }: UpgradeModalProps) {
                     </ul>
                 </div>
                 <DialogFooter>
-                    <Button onClick={handleUpgrade} className="w-full text-lg font-semibold" size="lg">
-                        Fazer Upgrade Agora
+                    <Button onClick={handleSubscribe} disabled={loading} className="w-full text-lg font-semibold" size="lg">
+                        {loading ? 'Redirecionando para o Stripe...' : 'Fazer Upgrade Agora'}
                     </Button>
                 </DialogFooter>
             </DialogContent>

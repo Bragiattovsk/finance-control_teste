@@ -84,7 +84,7 @@ export function AttachmentInput({ value, onChange, isPro, transactionId }: Attac
                 <input
                     ref={inputRef}
                     type="file"
-                    accept="image/*,application/pdf"
+                    accept="image/*,.pdf"
                     className="hidden"
                     onChange={onInputChange}
                     disabled={isUploading || !!value}
@@ -93,7 +93,7 @@ export function AttachmentInput({ value, onChange, isPro, transactionId }: Attac
                 {isUploading ? (
                     <div className="flex flex-col items-center gap-2 text-muted-foreground">
                         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                        <span className="text-xs">Enviando arquivo...</span>
+                        <span className="text-xs font-medium">Otimizando e enviando...</span>
                     </div>
                 ) : value ? (
                     <div className="flex w-full items-center justify-between gap-2">
@@ -129,7 +129,7 @@ export function AttachmentInput({ value, onChange, isPro, transactionId }: Attac
                                 Arraste o comprovante ou clique
                             </p>
                             <p className="text-xs text-muted-foreground/70">
-                                Max 300KB img / 2MB PDF
+                                Suporta Imagens (até 10MB) ou PDF (até 2MB).
                             </p>
                         </div>
                     </div>

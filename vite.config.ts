@@ -10,9 +10,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
-        name: 'Nexo - Finance Control',
-        short_name: 'Nexo',
-        description: 'Sua gestão financeira inteligente.',
+        name: 'Lumie Finance',
+        short_name: 'Lumie',
+        description: 'O app financeiro do Profissional Híbrido.',
         theme_color: '#09090b',
         background_color: '#09090b',
         display: 'standalone',

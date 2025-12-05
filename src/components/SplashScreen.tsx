@@ -29,7 +29,7 @@ export function SplashScreen({ onFinish }: SplashScreenProps) {
   return (
     <div className={containerClass}>
       <div className="text-5xl md:text-7xl font-black tracking-tighter text-white animate-in zoom-in-95 fade-in duration-1000">
-        NEXO
+        LUMIE
       </div>
       <div className="text-xs md:text-sm font-light text-zinc-500 tracking-[0.3em] mt-4 uppercase animate-in slide-in-from-bottom-2 fade-in duration-1000 delay-200">
         FINANCE CONTROL

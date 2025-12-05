@@ -90,7 +90,7 @@ export function InvestmentSimulator() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in duration-500">
         {/* Sidebar - Parameters */}
         <div className="lg:col-span-1 space-y-6">
-          <Card className="border-border/50 shadow-sm h-full">
+          <Card className="bg-zinc-900 border-white/10 shadow-sm h-full">
             <CardHeader className="pb-4">
               <CardTitle className="text-xl flex items-center gap-2">
                 Simulador
@@ -328,7 +328,7 @@ export function InvestmentSimulator() {
         <div className="lg:col-span-2 space-y-6">
           {/* KPI Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Card className="bg-card/50 border-border/50">
+            <Card className="bg-zinc-900 border-white/10">
               <CardHeader className="p-4 pb-2 space-y-0">
                 <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                   <PiggyBank className="w-3 h-3" /> Total Investido
@@ -340,7 +340,7 @@ export function InvestmentSimulator() {
               </CardContent>
             </Card>
 
-            <Card className="bg-emerald-500/5 border-emerald-500/20">
+            <Card className="bg-emerald-500/5 border-white/10">
               <CardHeader className="p-4 pb-2 space-y-0">
                 <CardTitle className="text-xs font-medium text-emerald-600/80 uppercase tracking-wider flex items-center gap-2">
                   <TrendingUp className="w-3 h-3" /> Rendimento Líquido
@@ -365,7 +365,7 @@ export function InvestmentSimulator() {
               </CardContent>
             </Card>
 
-            <Card className="bg-primary/5 border-primary/20 shadow-sm relative overflow-hidden">
+            <Card className="bg-primary/5 border-white/10 shadow-sm relative overflow-hidden">
               <div className="absolute right-0 top-0 w-16 h-16 bg-primary/10 rounded-bl-full -mr-8 -mt-8" />
               <CardHeader className="p-4 pb-2 space-y-0 relative">
                 <CardTitle className="text-xs font-medium text-primary/80 uppercase tracking-wider flex items-center gap-2">
@@ -380,7 +380,7 @@ export function InvestmentSimulator() {
           </div>
 
           {/* Chart */}
-          <Card className="border-border/50 shadow-sm">
+          <Card className="bg-zinc-900 border-white/10 shadow-sm">
             <CardHeader>
               <CardTitle className="text-base font-medium">Evolução Patrimonial</CardTitle>
             </CardHeader>
