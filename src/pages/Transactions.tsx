@@ -332,19 +332,47 @@ export function Transactions() {
                                 </div>
                             </div>
 
-                            {/* Value & Attachment */}
-                            <div className="flex flex-col items-end gap-1">
+                            {/* Value, Actions & Attachment */}
+                            <div className="flex flex-col items-end gap-2">
                                 <span className={`text-sm font-bold ${transaction.tipo === "receita" ? "text-emerald-500" : "text-rose-500"}`}>
                                     {formatCurrency(transaction.valor)}
                                 </span>
-                                {transaction.attachment_path && (
-                                    <button
-                                        onClick={(e) => handleOpenReceipt(e, transaction.attachment_path as string)}
-                                        className="text-muted-foreground hover:text-primary transition-colors"
+                                
+                                <div className="flex items-center gap-1">
+                                    {transaction.attachment_path && (
+                                        <button
+                                            onClick={(e) => handleOpenReceipt(e, transaction.attachment_path as string)}
+                                            className="text-muted-foreground hover:text-primary transition-colors p-1"
+                                            title="Ver comprovante"
+                                        >
+                                            <Paperclip className="h-4 w-4" />
+                                        </button>
+                                    )}
+                                    
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-7 w-7 text-muted-foreground hover:text-primary"
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            handleEdit(transaction)
+                                        }}
                                     >
-                                        <Paperclip className="h-4 w-4" />
-                                    </button>
-                                )}
+                                        <Pencil className="h-4 w-4" />
+                                    </Button>
+
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-500/10"
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            handleDelete(transaction)
+                                        }}
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     ))

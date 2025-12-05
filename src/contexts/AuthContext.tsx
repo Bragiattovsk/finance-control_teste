@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase"
 import { Profile } from "@/types"
 import { AuthContext } from "./auth-context"
 import { useAuth } from "./auth-hooks"
+import posthog from "posthog-js"
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [session, setSession] = useState<Session | null>(null)
@@ -66,6 +67,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                         if (profileData) {
                             setProfile(profileData)
 
+                            // Identify user in PostHog
+                            posthog.identify(session.user.id, {
+                                email: session.user.email,
+                                plan: profileData.subscription_tier || 'FREE',
+                                name: profileData.full_name
+                            });
+
                             // Check suspension
                             if (profileData.deletion_scheduled_at) {
                                 const deletionDate = new Date(profileData.deletion_scheduled_at)
@@ -101,7 +109,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const {
             data: { subscription },
         } = supabase.auth.onAuthStateChange((_event, _session) => {
-            // Prevent unnecessary re-renders/loading state on tab switch or token refresh
+            
+            
+            if (_event === "PASSWORD_RECOVERY") {
+                window.location.href = '/update-password'; 
+                return; 
+            }
+
             if ((_event === "SIGNED_IN" || _event === "TOKEN_REFRESHED") && _session?.user?.id === userRef.current?.id) {
                 setSession(_session)
                 return
@@ -126,6 +140,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, [fetchProfileData])
 
     const signOut = async () => {
+        posthog.reset()
         await supabase.auth.signOut()
         setIsDeletionScheduled(false)
         setDeletionDate(null)

@@ -60,6 +60,7 @@ serve(async (req: Request) => {
         },
       ],
       mode: 'subscription',
+      allow_promotion_codes: true,
       success_url: `${returnUrl}?success=true`,
       cancel_url: `${returnUrl}?canceled=true`,
       customer_email: user.email, // Securely from auth user

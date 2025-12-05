@@ -23,11 +23,15 @@ import { WidgetType, WidgetSize } from "@/types/dashboard"
 
 import { UpgradeModal } from "@/components/UpgradeModal"
 import { useToast } from "@/hooks/use-toast"
+import { BalanceDetailsModal } from "@/components/dashboard/BalanceDetailsModal"
+import { BalanceSparkline } from "@/components/dashboard/BalanceSparkline"
+
 export function Dashboard() {
     const [currentDate, setCurrentDate] = useState(new Date())
     const [isTransferModalOpen, setIsTransferModalOpen] = useState(false)
+    const [isBalanceModalOpen, setIsBalanceModalOpen] = useState(false)
     const { income, expense, balance, investment, loading, refetch } = useInvestment(currentDate)
-    const { walletBalance, refetch: refetchAnalytics } = useDashboardAnalytics(currentDate)
+    const { walletBalance, balanceHistory, refetch: refetchAnalytics } = useDashboardAnalytics(currentDate)
 
     useRecurrenceCheck(refetch)
 
@@ -110,10 +114,12 @@ export function Dashboard() {
                 </div>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                {/* 1. Saldo Atual (Destaque) */}
-                <Card className={cn(
-                    "rounded-xl shadow-md hover:shadow-lg transition-all duration-200 border relative overflow-hidden group",
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                {/* 1. Saldo Atual (Destaque - Top Left) */}
+                <Card 
+                    onClick={() => setIsBalanceModalOpen(true)}
+                    className={cn(
+                    "rounded-xl shadow-md hover:shadow-lg transition-all duration-200 border relative overflow-hidden group cursor-pointer hover:bg-card/80 md:col-span-8 h-full min-h-[140px]",
                     walletBalance > 0 ? "bg-emerald-500/10 border-emerald-500/20" : 
                     walletBalance < 0 ? "bg-red-500/10 border-red-500/20" : 
                     "bg-zinc-500/10 border-zinc-500/20"
@@ -125,54 +131,79 @@ export function Dashboard() {
                         "bg-zinc-500"
                     )}></div>
                     
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-                        <div className="flex items-center gap-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground">Saldo em Conta</CardTitle>
-                            <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger>
-                                        <Info className="h-3.5 w-3.5 cursor-help text-muted-foreground/70 hover:text-foreground" />
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p>Soma de todas as suas receitas menos despesas desde o início</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
+                    <CardContent className="p-6 relative z-10">
+                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                            <div className="flex flex-col space-y-2">
+                                <div className="flex items-center gap-2">
+                                    <CardTitle className="text-sm font-medium text-muted-foreground">Saldo em Conta</CardTitle>
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger>
+                                                <Info className="h-3.5 w-3.5 cursor-help text-muted-foreground/70 hover:text-foreground" />
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>Soma de todas as suas receitas menos despesas desde o início</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                    <div className={cn(
+                                        "p-1.5 rounded-md backdrop-blur-sm ml-1",
+                                         walletBalance > 0 ? "bg-emerald-500/10" :
+                                         walletBalance < 0 ? "bg-red-500/10" :
+                                         "bg-zinc-500/10"
+                                    )}>
+                                        <Wallet className={cn(
+                                            "h-3.5 w-3.5",
+                                            walletBalance > 0 ? "text-emerald-500" :
+                                            walletBalance < 0 ? "text-red-500" :
+                                            "text-foreground"
+                                        )} />
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <div className={cn(
+                                        "text-4xl font-bold tracking-tight",
+                                        walletBalance > 0 ? "text-emerald-500" :
+                                        walletBalance < 0 ? "text-red-500" :
+                                        "text-foreground"
+                                    )}>{formatCurrency(walletBalance)}</div>
+                                    <p className={cn(
+                                        "text-xs font-medium mt-1",
+                                        walletBalance > 0 ? "text-emerald-600/80 dark:text-emerald-400/80" :
+                                        walletBalance < 0 ? "text-red-600/80 dark:text-red-400/80" :
+                                        "text-muted-foreground"
+                                    )}>
+                                        Acumulado total
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="hidden md:block flex-1 h-24 ml-4 self-end opacity-80">
+                                <BalanceSparkline data={balanceHistory} />
+                            </div>
                         </div>
-                        <div className={cn(
-                            "p-2 rounded-lg backdrop-blur-sm",
-                             walletBalance > 0 ? "bg-emerald-500/10" :
-                             walletBalance < 0 ? "bg-red-500/10" :
-                             "bg-zinc-500/10"
-                        )}>
-                            <Wallet className={cn(
-                                "h-4 w-4",
-                                walletBalance > 0 ? "text-emerald-500" :
-                                walletBalance < 0 ? "text-red-500" :
-                                "text-foreground"
-                            )} />
+                    </CardContent>
+                </Card>
+
+                {/* 2. Meta de Investimento (Top Right) */}
+                <Card className="rounded-xl shadow-sm hover:shadow-md transition-all duration-200 border-primary/20 bg-primary/5 md:col-span-4 h-full min-h-[140px]">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium text-primary/80">Meta de Investimento</CardTitle>
+                        <div className="p-2 bg-primary/10 rounded-lg">
+                            <DollarSign className="h-4 w-4 text-primary" />
                         </div>
                     </CardHeader>
-                    <CardContent className="relative z-10">
-                        <div className={cn(
-                            "text-2xl font-bold",
-                            walletBalance > 0 ? "text-emerald-500" :
-                            walletBalance < 0 ? "text-red-500" :
-                            "text-foreground"
-                        )}>{formatCurrency(walletBalance)}</div>
-                        <p className={cn(
-                            "text-xs mt-1 font-medium",
-                            walletBalance > 0 ? "text-emerald-600/80 dark:text-emerald-400/80" :
-                            walletBalance < 0 ? "text-red-600/80 dark:text-red-400/80" :
-                            "text-muted-foreground"
-                        )}>
-                            Acumulado total
+                    <CardContent>
+                        <div className="text-2xl font-bold text-primary">{formatCurrency(investment)}</div>
+                        <p className="text-xs text-primary/70 mt-1 font-medium">
+                            Sugestão para {capitalizedMonth}
                         </p>
                     </CardContent>
                 </Card>
 
-                {/* 2. Receita Mês */}
-                <Card className="rounded-xl shadow-sm hover:shadow-md transition-all duration-200 border-border/50 bg-card">
+                {/* 3. Receita Mês (Bottom Row) */}
+                <Card className="rounded-xl shadow-sm hover:shadow-md transition-all duration-200 border-border/50 bg-card md:col-span-4">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium text-muted-foreground">Receita em {capitalizedMonth}</CardTitle>
                         <div className="p-2 bg-emerald-500/10 rounded-lg">
@@ -187,8 +218,8 @@ export function Dashboard() {
                     </CardContent>
                 </Card>
 
-                {/* 3. Despesa Mês */}
-                <Card className="rounded-xl shadow-sm hover:shadow-md transition-all duration-200 border-border/50 bg-card">
+                {/* 4. Despesa Mês (Bottom Row) */}
+                <Card className="rounded-xl shadow-sm hover:shadow-md transition-all duration-200 border-border/50 bg-card md:col-span-4">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium text-muted-foreground">Despesa em {capitalizedMonth}</CardTitle>
                         <div className="p-2 bg-rose-500/10 rounded-lg">
@@ -203,8 +234,8 @@ export function Dashboard() {
                     </CardContent>
                 </Card>
 
-                {/* 4. Balanço Mês */}
-                <Card className="rounded-xl shadow-sm hover:shadow-md transition-all duration-200 border-border/50 bg-card">
+                {/* 5. Balanço Mês (Bottom Row) */}
+                <Card className="rounded-xl shadow-sm hover:shadow-md transition-all duration-200 border-border/50 bg-card md:col-span-4">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium text-muted-foreground">Balanço de {capitalizedMonth}</CardTitle>
                         <div className={cn(
@@ -226,22 +257,6 @@ export function Dashboard() {
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
                             Resultado do mês
-                        </p>
-                    </CardContent>
-                </Card>
-
-                {/* 5. Meta de Investimento (Optional 5th card, kept for completeness but could be moved) */}
-                 <Card className="rounded-xl shadow-sm hover:shadow-md transition-all duration-200 border-primary/20 bg-primary/5 md:col-span-2 lg:col-span-4 xl:col-span-1">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-primary/80">Meta de Investimento</CardTitle>
-                        <div className="p-2 bg-primary/10 rounded-lg">
-                            <DollarSign className="h-4 w-4 text-primary" />
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-primary">{formatCurrency(investment)}</div>
-                        <p className="text-xs text-primary/70 mt-1 font-medium">
-                            Sugestão para {capitalizedMonth}
                         </p>
                     </CardContent>
                 </Card>
@@ -330,6 +345,11 @@ export function Dashboard() {
             <UpgradeModal
                 open={isUpgradeModalOpen}
                 onOpenChange={setIsUpgradeModalOpen}
+            />
+
+            <BalanceDetailsModal 
+                isOpen={isBalanceModalOpen}
+                onClose={setIsBalanceModalOpen}
             />
         </div>
     )

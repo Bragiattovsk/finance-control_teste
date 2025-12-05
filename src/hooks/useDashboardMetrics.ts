@@ -176,11 +176,17 @@ export function useVariableExpensesMetrics(): MetricsResult {
     return { data, isLoading, error };
 }
 
+export interface BalanceHistoryPoint {
+    month: string;
+    balance: number;
+}
+
 interface DashboardAnalytics {
     income: number;
     expense: number;
     monthlyBalance: number;
     walletBalance: number;
+    balanceHistory: BalanceHistoryPoint[];
     loading: boolean;
     error: Error | null;
     refetch: () => Promise<void>;
@@ -192,6 +198,7 @@ export function useDashboardAnalytics(currentDate: Date): DashboardAnalytics {
     const [expense, setExpense] = useState(0);
     const [monthlyBalance, setMonthlyBalance] = useState(0);
     const [walletBalance, setWalletBalance] = useState(0);
+    const [balanceHistory, setBalanceHistory] = useState<BalanceHistoryPoint[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
 
@@ -238,19 +245,33 @@ export function useDashboardAnalytics(currentDate: Date): DashboardAnalytics {
         }
     };
 
+    const fetchBalanceHistory = async () => {
+        if (!user) return [];
+        try {
+            const { data, error: rpcError } = await supabase.rpc('get_balance_history_12m', { p_user_id: user.id });
+            if (rpcError) throw rpcError;
+            return (data as BalanceHistoryPoint[]) || [];
+        } catch (err) {
+            console.error('Error fetching balance history:', err);
+            return [];
+        }
+    };
+
     const fetchAll = async () => {
         if (!user) return;
         setLoading(true);
         setError(null);
         try {
-            const [monthly, globalBal] = await Promise.all([
+            const [monthly, globalBal, history] = await Promise.all([
                 fetchMonthlyData(currentDate),
-                fetchGlobalBalance()
+                fetchGlobalBalance(),
+                fetchBalanceHistory()
             ]);
             setIncome(monthly.income);
             setExpense(monthly.expense);
             setMonthlyBalance(monthly.balance);
             setWalletBalance(globalBal);
+            setBalanceHistory(history);
         } catch (err) {
             setError(err instanceof Error ? err : new Error('Erro ao carregar métricas'));
         } finally {
@@ -263,5 +284,5 @@ export function useDashboardAnalytics(currentDate: Date): DashboardAnalytics {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user, currentDate]);
 
-    return { income, expense, monthlyBalance, walletBalance, loading, error, refetch: fetchAll };
+    return { income, expense, monthlyBalance, walletBalance, balanceHistory, loading, error, refetch: fetchAll };
 }

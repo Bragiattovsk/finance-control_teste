@@ -58,14 +58,22 @@ serve(async (req: Request) => {
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as StripeCheckoutSession
       const userId = session.client_reference_id
+      // Stripe typing can be tricky; customer might be a string or object depending on expansion
+      const customerId = typeof session.customer === 'string' 
+          ? session.customer 
+          : (session.customer as { id: string })?.id;
 
       console.log(`💰 Pagamento recebido para usuário: ${userId}`)
+      console.log(`👤 Customer ID: ${customerId}`)
 
       if (userId) {
         // Atualiza o plano no banco
         const { error } = await supabaseAdmin
           .from('profiles')
-          .update({ subscription_tier: 'PRO' })
+          .update({ 
+            subscription_tier: 'PRO',
+            stripe_customer_id: customerId 
+          })
           .eq('user_id', userId)
 
         if (error) {

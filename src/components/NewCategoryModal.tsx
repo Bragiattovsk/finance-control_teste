@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { supabase } from "@/lib/supabase"
 import { useAuth } from "@/contexts/auth-hooks"
-import { Loader2 } from "lucide-react"
+import { Loader2, Palette } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 
@@ -20,6 +20,19 @@ interface NewCategoryModalProps {
     defaultType?: 'income' | 'expense'
 }
 
+const PRESET_COLORS = [
+    '#ef4444', // Red
+    '#f97316', // Orange
+    '#eab308', // Yellow
+    '#22c55e', // Green
+    '#06b6d4', // Cyan
+    '#3b82f6', // Blue
+    '#a855f7', // Purple
+    '#ec4899', // Pink
+    '#64748b', // Slate
+    '#000000'  // Black
+]
+
 export function NewCategoryModal({ isOpen, onClose, onSuccess, defaultIsInvestment = false, defaultType = 'expense' }: NewCategoryModalProps) {
     const { user } = useAuth()
     const { toast } = useToast()
@@ -27,8 +40,9 @@ export function NewCategoryModal({ isOpen, onClose, onSuccess, defaultIsInvestme
 
     const [name, setName] = useState("")
     const [type, setType] = useState<'income' | 'expense'>('expense')
-    const [color, setColor] = useState("#000000")
+    const [color, setColor] = useState(PRESET_COLORS[0])
     const [isInvestment, setIsInvestment] = useState(defaultIsInvestment)
+    const colorInputRef = useRef<HTMLInputElement>(null)
 
     useEffect(() => {
         if (isOpen) {
@@ -76,7 +90,7 @@ export function NewCategoryModal({ isOpen, onClose, onSuccess, defaultIsInvestme
     const resetForm = () => {
         setName("")
         setType(defaultType)
-        setColor("#000000")
+        setColor(PRESET_COLORS[0])
         setIsInvestment(defaultIsInvestment)
     }
 
@@ -132,16 +146,45 @@ export function NewCategoryModal({ isOpen, onClose, onSuccess, defaultIsInvestme
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="color">Cor</Label>
-                        <div className="flex items-center gap-2">
-                            <Input
-                                id="color"
-                                type="color"
-                                value={color}
-                                onChange={(e) => setColor(e.target.value)}
-                                className="w-12 h-10 p-1"
-                                required
-                            />
-                            <span className="text-sm text-muted-foreground">{color}</span>
+                        <div className="flex flex-wrap gap-3">
+                            {PRESET_COLORS.map((presetColor) => (
+                                <button
+                                    key={presetColor}
+                                    type="button"
+                                    className={cn(
+                                        "h-8 w-8 rounded-full border border-border shadow-sm transition-all",
+                                        color === presetColor && "ring-2 ring-offset-2 ring-primary scale-110"
+                                    )}
+                                    style={{ backgroundColor: presetColor }}
+                                    onClick={() => setColor(presetColor)}
+                                    aria-label={`Selecionar cor ${presetColor}`}
+                                />
+                            ))}
+                            
+                            <div className="relative">
+                                <button
+                                    type="button"
+                                    className={cn(
+                                        "h-8 w-8 rounded-full border border-dashed border-muted-foreground/50 flex items-center justify-center hover:bg-muted transition-all",
+                                        !PRESET_COLORS.includes(color) && "ring-2 ring-offset-2 ring-primary border-solid bg-muted"
+                                    )}
+                                    onClick={() => colorInputRef.current?.click()}
+                                    title="Cor personalizada"
+                                >
+                                    <Palette className="h-4 w-4 text-muted-foreground" />
+                                </button>
+                                <input
+                                    ref={colorInputRef}
+                                    type="color"
+                                    value={color}
+                                    onChange={(e) => setColor(e.target.value)}
+                                    className="absolute opacity-0 pointer-events-none"
+                                    tabIndex={-1}
+                                />
+                            </div>
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                            Cor selecionada: <span className="font-mono">{color}</span>
                         </div>
                     </div>
                     <div className="flex items-center space-x-2">

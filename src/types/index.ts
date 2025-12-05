@@ -38,4 +38,8 @@ export interface Profile {
     email: string;
     deletion_scheduled_at?: string | null;
     subscription_tier?: 'FREE' | 'PRO';
+    full_name?: string | null;
+    avatar_url?: string | null;
+    investimento_percentual?: number | null;
+    investimento_base?: 'BRUTO' | 'SOBRA' | null;
 }

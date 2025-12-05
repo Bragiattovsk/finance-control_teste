@@ -51,7 +51,7 @@ export function FeedbackWidget() {
       <DialogTrigger asChild>
         <Button
           size="icon"
-          className="fixed bottom-4 right-4 z-50 h-12 w-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+          className="fixed right-4 z-50 bottom-24 md:bottom-4 h-12 w-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
         >
           <MessageSquare className="h-6 w-6" />
         </Button>

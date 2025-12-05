@@ -208,8 +208,6 @@ export const useDashboardWidgets = () => {
                 data_config: options?.config || {},
             };
 
-            console.log('Enviando Payload:', widgetPayload);
-
             const { data, error } = await supabase
                 .from('dashboard_widgets')
                 .insert(widgetPayload)

@@ -31,6 +31,7 @@ declare module 'https://esm.sh/stripe@12.0.0' {
   export default class Stripe {
     constructor(apiKey: string, config?: { apiVersion?: string })
     checkout: { sessions: { create: (params: unknown) => Promise<{ url?: string | null }> } }
+    billingPortal: { sessions: { create: (params: unknown) => Promise<{ url?: string | null }> } }
     webhooks: { constructEvent: (body: string, signature: string, secret: string) => Stripe.Event }
   }
 }
@@ -57,6 +58,7 @@ declare module 'https://esm.sh/stripe@14.21.0' {
   export default class Stripe {
     constructor(apiKey: string, config?: { apiVersion?: string })
     checkout: { sessions: { create: (params: unknown) => Promise<{ url?: string | null }> } }
+    billingPortal: { sessions: { create: (params: unknown) => Promise<{ url?: string | null }> } }
     webhooks: { constructEvent: (body: string, signature: string, secret: string) => Stripe.Event }
   }
 }

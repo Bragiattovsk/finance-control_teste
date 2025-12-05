@@ -148,8 +148,6 @@ export function useDashboardLayout() {
                 data_config: dataConfig,
             }
 
-            console.log('Enviando Payload:', widgetPayload);
-
             const { error } = await supabase
                 .from('dashboard_widgets')
                 .insert(widgetPayload)
