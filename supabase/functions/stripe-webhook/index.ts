@@ -6,9 +6,7 @@ import Stripe from "https://esm.sh/stripe@14.21.0?target=deno"
 
 console.log("Stripe Webhook Handler iniciado...")
 
-type StripeCheckoutSession = { client_reference_id?: string | null; customer?: string | { id: string } | null }
-
-serve(async (req: Request) => {
+serve(async (req) => {
   try {
     const signature = req.headers.get('stripe-signature')
     
@@ -17,31 +15,33 @@ serve(async (req: Request) => {
       return new Response('No stripe signature found', { status: 400 })
     }
 
-    // 1. Inicializa Stripe e Supabase
+    // Pega as chaves
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY')
     const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')
-    
-    if (!stripeKey || !webhookSecret) {
-        console.error("Erro: Variáveis de ambiente STRIPE faltando.")
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+
+    if (!stripeKey || !webhookSecret || !supabaseUrl || !supabaseServiceKey) {
+        console.error("Erro: Variáveis de ambiente faltando.")
         return new Response('Server configuration error', { status: 500 })
     }
 
     const stripe = new Stripe(stripeKey, {
       apiVersion: '2023-10-16',
+      // @ts-expect-error Propriedade necessária para Deno no runtime v14
+      httpClient: Stripe.createFetchHttpClient(),
     })
 
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') as string,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') as string 
-    )
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
 
-    // 2. Lê o corpo da requisição
+    // Lê o corpo da requisição como texto
     const body = await req.text()
     
-    // 3. Valida se o evento veio mesmo do Stripe
     let event
     try {
-      event = stripe.webhooks.constructEvent(
+      // CORREÇÃO CRÍTICA AQUI: Usamos a versão Async
+      // @ts-expect-error Método existe na v14
+      event = await stripe.webhooks.constructEventAsync(
         body,
         signature,
         webhookSecret
@@ -52,19 +52,15 @@ serve(async (req: Request) => {
       return new Response(`Webhook Error: ${message}`, { status: 400 })
     }
 
-    // 4. Processa o evento
+    // Processa o evento
     console.log(`Evento recebido: ${event.type}`)
 
     if (event.type === 'checkout.session.completed') {
-      const session = event.data.object as StripeCheckoutSession
+      const session = event.data.object
       const userId = session.client_reference_id
-      // Stripe typing can be tricky; customer might be a string or object depending on expansion
-      const customerId = typeof session.customer === 'string' 
-          ? session.customer 
-          : (session.customer as { id: string })?.id;
+      const customerId = session.customer
 
       console.log(`💰 Pagamento recebido para usuário: ${userId}`)
-      console.log(`👤 Customer ID: ${customerId}`)
 
       if (userId) {
         // Atualiza o plano no banco
@@ -81,8 +77,6 @@ serve(async (req: Request) => {
             throw error
         }
         console.log('✅ SUCESSO: Plano atualizado para PRO!')
-      } else {
-          console.warn('Aviso: userId não encontrado na sessão do Stripe (client_reference_id vazio).')
       }
     }
 
