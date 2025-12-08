@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { useProject } from "@/contexts/project-hooks"
 import {
     Select,
@@ -11,15 +12,28 @@ import {
 import { NewProjectModal } from "@/components/NewProjectModal"
 import { UpgradeModal } from "@/components/UpgradeModal"
 import { useAuth } from "@/contexts/auth-hooks"
-import { PlusCircle, User, Lock } from "lucide-react"
+import { PlusCircle, User, Lock, Settings } from "lucide-react"
 
 export function ContextSwitcher({ className }: { className?: string }) {
     const { projects, selectedProject, selectProject } = useProject()
     const { profile } = useAuth()
+    const navigate = useNavigate()
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false)
 
     const handleValueChange = (value: string) => {
+        if (value === "manage_projects") {
+            navigate("/settings")
+            // Timeout to allow navigation to complete before scrolling
+            setTimeout(() => {
+                const element = document.getElementById("project-management")
+                if (element) {
+                    element.scrollIntoView({ behavior: "smooth" })
+                }
+            }, 100)
+            return
+        }
+
         if (value === "new_project") {
             if (profile?.subscription_tier === 'FREE') {
                 setIsUpgradeModalOpen(true)
@@ -83,6 +97,13 @@ export function ContextSwitcher({ className }: { className?: string }) {
                         <div className="flex items-center gap-2">
                             <PlusCircle className="h-4 w-4" />
                             <span>Novo Projeto</span>
+                        </div>
+                    </SelectItem>
+
+                    <SelectItem value="manage_projects" className="text-muted-foreground focus:text-foreground font-medium cursor-pointer">
+                        <div className="flex items-center gap-2">
+                            <Settings className="h-4 w-4" />
+                            <span>Gerenciar Projetos</span>
                         </div>
                     </SelectItem>
                 </SelectContent>

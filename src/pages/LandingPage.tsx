@@ -100,41 +100,15 @@ export default function LandingPage() {
                 "transform rotate-x-[12deg] transition-transform duration-700 hover:rotate-x-0"
               )}
             >
-              {/* Mock Window Controls */}
-              <div className="absolute top-4 left-4 flex gap-2 z-20">
-                <div className="w-3 h-3 rounded-full bg-red-500/20 border border-red-500/50" />
-                <div className="w-3 h-3 rounded-full bg-yellow-500/20 border border-yellow-500/50" />
-                <div className="w-3 h-3 rounded-full bg-green-500/20 border border-green-500/50" />
-              </div>
 
               {/* Inner Content Placeholder */}
               <div className="aspect-[16/9] rounded-lg bg-zinc-950/80 w-full overflow-hidden flex items-center justify-center border border-white/5 relative group">
-                <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/10 via-transparent to-cyan-500/10 opacity-50" />
-                
-                {/* Abstract Dashboard UI Representation */}
-                <div className="w-full h-full p-8 flex flex-col gap-6 opacity-60 group-hover:opacity-100 transition-opacity duration-500">
-                  {/* Header Mock */}
-                  <div className="h-12 w-full flex justify-between items-center border-b border-white/5 pb-4">
-                    <div className="h-4 w-32 bg-zinc-800 rounded" />
-                    <div className="flex gap-2">
-                      <div className="h-8 w-8 rounded-full bg-zinc-800" />
-                      <div className="h-8 w-8 rounded-full bg-purple-500/20" />
-                    </div>
-                  </div>
-                  {/* Grid Mock */}
-                  <div className="grid grid-cols-3 gap-4 h-full">
-                    <div className="col-span-2 flex flex-col gap-4">
-                      <div className="h-32 bg-zinc-800/50 rounded-lg border border-white/5" />
-                      <div className="flex-1 bg-zinc-800/50 rounded-lg border border-white/5" />
-                    </div>
-                    <div className="col-span-1 bg-zinc-800/30 rounded-lg border border-white/5" />
-                  </div>
-                </div>
-
-                {/* Overlay Text */}
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <p className="text-zinc-500 font-mono text-sm">Dashboard Preview</p>
-                </div>
+                <img 
+                  src="/dashboardpreview.png" 
+                  alt="Dashboard Preview" 
+                  className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/10 via-transparent to-cyan-500/10 pointer-events-none" />
               </div>
             </div>
           </div>
@@ -214,14 +188,11 @@ export default function LandingPage() {
                   </CardDescription>
                 </CardHeader>
                 <div className="p-6 md:pr-12">
-                   {/* Simple visual representation of mobile */}
-                   <div className="w-24 h-40 border-4 border-zinc-700 rounded-[2rem] bg-zinc-950 relative overflow-hidden">
-                      <div className="absolute top-0 w-full h-4 bg-zinc-800 rounded-b-lg z-10" />
-                      <div className="w-full h-full bg-zinc-900 flex flex-col p-2 gap-2 pt-6">
-                        <div className="w-full h-8 bg-zinc-800 rounded" />
-                        <div className="w-full h-16 bg-purple-500/20 rounded" />
-                      </div>
-                   </div>
+                   <img 
+                     src="/pwapreview.png" 
+                     alt="App Mobile Preview" 
+                     className="h-48 w-auto object-contain rounded-xl border border-white/10 shadow-lg shadow-purple-500/10 rotate-0 hover:rotate-3 transition-transform duration-300"
+                   />
                 </div>
               </div>
             </Card>
@@ -274,7 +245,17 @@ export default function LandingPage() {
               </div>
               <CardHeader>
                 <CardTitle className="text-2xl text-purple-400">Pro</CardTitle>
-                <div className="text-4xl font-bold mt-4 text-zinc-50">R$ 29<span className="text-lg font-normal text-zinc-500">/mês</span></div>
+                <div className="flex flex-col items-start gap-1 my-4">
+                  <span className="text-sm text-zinc-500 line-through font-medium">De R$ 29,90</span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-bold text-white">R$ 14,90</span>
+                    <span className="text-zinc-400 text-sm">/mês</span>
+                  </div>
+                  <span className="text-xs font-semibold text-emerald-400 tracking-wide uppercase mt-1">
+                    ✨ Oferta Founder (Vitalício)
+                  </span>
+                </div>
+                <p className="text-xs text-zinc-400">Garanta o preço de lançamento para sempre.</p>
                 <CardDescription className="mt-2">Poder total para o profissional híbrido.</CardDescription>
               </CardHeader>
               <CardContent className="flex-1">
@@ -296,7 +277,7 @@ export default function LandingPage() {
               <CardFooter>
                 <Link to="/register" className="w-full">
                   <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white">
-                    Assinar Agora
+                    Quero ser Founder
                   </Button>
                 </Link>
               </CardFooter>

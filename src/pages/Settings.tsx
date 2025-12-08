@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { supabase } from "@/lib/supabase"
 import { useAuth } from "@/contexts/auth-hooks"
 import { Button } from "@/components/ui/button"
@@ -23,6 +23,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useAvatarUpload } from "@/hooks/useAvatarUpload"
 import { Badge } from "@/components/ui/badge"
 import { UpgradeModal } from "@/components/UpgradeModal"
+import { ProjectManagement } from "@/components/settings/ProjectManagement"
 
 import {
     Dialog,
@@ -60,6 +61,26 @@ export function Settings() {
     // Investment Settings State
     const [investmentPercent, setInvestmentPercent] = useState("")
     const [investmentBase, setInvestmentBase] = useState<"BRUTO" | "SOBRA">("SOBRA")
+
+    // Lógica para extrair as iniciais de forma segura
+    const userInitials = useMemo(() => {
+        const name = profile?.full_name;
+        const email = user?.email;
+        if (name && name.trim().length > 0) {
+            return name.charAt(0).toUpperCase();
+        }
+        if (email && email.trim().length > 0) {
+            return email.charAt(0).toUpperCase();
+        }
+        return '?'; // Fallback final
+    }, [profile?.full_name, user?.email]);
+
+    const safeAvatarUrl = useMemo(() => {
+        if (profile?.avatar_url && profile.avatar_url.trim() !== "") {
+            return `${profile.avatar_url}?v=${avatarVersion}`;
+        }
+        return null;
+    }, [profile?.avatar_url, avatarVersion]);
 
     // Initialize form data from profile
     useEffect(() => {
@@ -280,13 +301,16 @@ export function Settings() {
                 </CardHeader>
                 <CardContent className="flex flex-col items-center gap-6">
                     <div className="relative group">
-                        <Avatar className="h-32 w-32 border-4 border-background shadow-xl">
-                            <AvatarImage 
-                                src={profile?.avatar_url ? `${profile.avatar_url}?v=${avatarVersion}` : undefined} 
-                                className="object-cover"
-                            />
-                            <AvatarFallback className="text-4xl bg-primary/10 text-primary">
-                                {profile?.full_name?.charAt(0) || user?.email?.charAt(0).toUpperCase()}
+                        <Avatar className="h-32 w-32 ring-4 ring-purple-500/20">
+                            {safeAvatarUrl && (
+                                <AvatarImage 
+                                    src={safeAvatarUrl} 
+                                    alt="Foto de Perfil" 
+                                    className="object-cover"
+                                />
+                            )}
+                            <AvatarFallback className="flex h-full w-full items-center justify-center bg-purple-600 text-4xl font-bold text-white delay-0">
+                                {userInitials}
                             </AvatarFallback>
                         </Avatar>
                         <Button
@@ -408,6 +432,8 @@ export function Settings() {
                     </Button>
                 </CardFooter>
             </Card>
+
+            <ProjectManagement id="project-management" />
 
             {/* Subscription Settings */}
             <Card className={profile?.subscription_tier === 'PRO' ? "border-primary/20 bg-primary/5" : ""}>
