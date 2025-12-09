@@ -8,7 +8,8 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+      // Dica: Adicionei sitemap.xml e robots.txt aqui para o PWA saber que eles existem
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg', 'sitemap.xml', 'robots.txt'], 
       manifest: {
         name: 'Lumie Finance',
         short_name: 'Lumie',
@@ -41,6 +42,42 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+    },
+  },
+  // 👇 A MÁGICA DA OTIMIZAÇÃO COMEÇA AQUI 👇
+  build: {
+    chunkSizeWarningLimit: 1600, // Aumenta o limite do aviso (para parar de reclamar)
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          // Se o arquivo vier de node_modules (bibliotecas instaladas)
+          if (id.includes('node_modules')) {
+            
+            // 1. Separa o Supabase (é pesado e muda pouco)
+            if (id.includes('@supabase')) {
+              return 'supabase';
+            }
+            
+            // 2. Separa a biblioteca de gráficos (Recharts é gigante)
+            if (id.includes('recharts')) {
+              return 'recharts';
+            }
+
+            // 3. Separa Ícones e Componentes UI (Lucide, Radix)
+            if (id.includes('lucide') || id.includes('@radix-ui')) {
+              return 'ui-vendor';
+            }
+
+            // 4. Separa o Core do React (Cache eterno)
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+              return 'react-vendor';
+            }
+
+            // 5. O resto fica num arquivo genérico "vendor"
+            return 'vendor';
+          }
+        },
+      },
     },
   },
 })
