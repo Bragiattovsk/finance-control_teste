@@ -51,21 +51,19 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            // 1. ISOLAR O PESADO (Gráficos, Supabase, PDF, Excel)
-            // Esses são os verdadeiros culpados pelo tamanho do bundle.
+            
+            // 1. ISOLAR APENAS O QUE NÃO É ESSENCIAL (Gráficos, PDF, Excel)
+            // Isso já reduz muito o peso inicial.
             if (id.includes('recharts') || id.includes('d3')) {
               return 'charts';
-            }
-            if (id.includes('@supabase')) {
-              return 'supabase';
             }
             if (id.includes('xlsx') || id.includes('jspdf') || id.includes('html2canvas')) {
               return 'heavy-libs';
             }
 
-            // 2. MANTER O NÚCLEO JUNTO (React + UI + Router)
-            // Colocar React, Radix, Lucide e Router no mesmo "saco" (vendor)
-            // previne o erro de 'forwardRef' e garante que a UI carregue sem falhas.
+            // 2. TUDO O RESTO VAI PARA "VENDOR"
+            // Colocamos Supabase, React, UI e Utils juntos.
+            // Isso garante que a ordem de inicialização seja respeitada e elimina o erro.
             return 'vendor';
           }
         },
