@@ -46,34 +46,26 @@ export default defineConfig({
   },
   // 👇 A MÁGICA DA OTIMIZAÇÃO COMEÇA AQUI 👇
   build: {
-    chunkSizeWarningLimit: 1600, // Aumenta o limite do aviso (para parar de reclamar)
+    chunkSizeWarningLimit: 1600,
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // Se o arquivo vier de node_modules (bibliotecas instaladas)
           if (id.includes('node_modules')) {
-            
-            // 1. Separa o Supabase (é pesado e muda pouco)
+            // 1. ISOLAR O PESADO (Gráficos, Supabase, PDF, Excel)
+            // Esses são os verdadeiros culpados pelo tamanho do bundle.
+            if (id.includes('recharts') || id.includes('d3')) {
+              return 'charts';
+            }
             if (id.includes('@supabase')) {
               return 'supabase';
             }
-            
-            // 2. Separa a biblioteca de gráficos (Recharts é gigante)
-            if (id.includes('recharts')) {
-              return 'recharts';
+            if (id.includes('xlsx') || id.includes('jspdf') || id.includes('html2canvas')) {
+              return 'heavy-libs';
             }
 
-            // 3. Separa Ícones e Componentes UI (Lucide, Radix)
-            if (id.includes('lucide') || id.includes('@radix-ui')) {
-              return 'ui-vendor';
-            }
-
-            // 4. Separa o Core do React (Cache eterno)
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
-              return 'react-vendor';
-            }
-
-            // 5. O resto fica num arquivo genérico "vendor"
+            // 2. MANTER O NÚCLEO JUNTO (React + UI + Router)
+            // Colocar React, Radix, Lucide e Router no mesmo "saco" (vendor)
+            // previne o erro de 'forwardRef' e garante que a UI carregue sem falhas.
             return 'vendor';
           }
         },
