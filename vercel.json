@@ -1,8 +1,7 @@
 {
   "rewrites": [
-    { "source": "/sitemap.xml", "destination": "/sitemap.xml" },
     {
-      "source": "/(.*)",
+      "source": "/((?!api/.*|sitemap.xml|robots.txt|og-image.png).*)",
       "destination": "/index.html"
     }
   ]
