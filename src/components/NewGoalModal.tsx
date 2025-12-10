@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle, Loader2 } from "lucide-react"
+import { AlertCircle, Loader2, Target, Calendar, Wallet, Plus } from "lucide-react"
 import { NewCategoryModal } from "./NewCategoryModal"
 
 interface Category {
@@ -151,102 +151,130 @@ export function NewGoalModal({ isOpen, onClose, onSuccess, goalToEdit }: NewGoal
     return (
         <>
             <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-                <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                        <DialogTitle>{goalToEdit ? "Editar Meta" : "Nova Meta"}</DialogTitle>
-                        <DialogDescription>
+                <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden gap-0">
+                    <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/40 bg-muted/5">
+                        <DialogTitle className="text-xl font-semibold flex items-center gap-2">
+                            <Target className="h-5 w-5 text-primary" />
+                            {goalToEdit ? "Editar Meta" : "Nova Meta"}
+                        </DialogTitle>
+                        <DialogDescription className="text-muted-foreground">
                             Defina seus objetivos financeiros e acompanhe seu progresso.
                         </DialogDescription>
                     </DialogHeader>
 
-                    <form onSubmit={handleSubmit} className="grid gap-4 py-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="title">Título da Meta</Label>
-                            <Input
-                                id="title"
-                                value={title}
-                                onChange={(e) => setTitle(e.target.value)}
-                                placeholder="Ex: Viagem para Europa"
-                                required
-                            />
-                        </div>
-
-                        <div className="grid gap-2">
-                            <Label htmlFor="targetAmount">Valor Alvo</Label>
-                            <Input
-                                id="targetAmount"
-                                type="number"
-                                step="0.01"
-                                value={targetAmount}
-                                onChange={(e) => setTargetAmount(e.target.value)}
-                                placeholder="0,00"
-                                required
-                            />
-                        </div>
-
-                        <div className="grid gap-2">
-                            <Label htmlFor="deadline">Data Limite</Label>
-                            <Input
-                                id="deadline"
-                                type="date"
-                                value={deadline}
-                                onChange={(e) => setDeadline(e.target.value)}
-                                required
-                            />
-                        </div>
-
-                        <div className="grid gap-2">
-                            <div className="flex items-center justify-between">
-                                <Label>Categorias de Investimento Vinculadas</Label>
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-8 text-xs"
-                                    onClick={() => setIsCategoryModalOpen(true)}
-                                >
-                                    + Nova Categoria
-                                </Button>
+                    <form onSubmit={handleSubmit}>
+                        <div className="px-6 py-6 space-y-6">
+                            <div className="space-y-2">
+                                <Label htmlFor="title" className="text-xs font-medium text-muted-foreground">Título da Meta</Label>
+                                <Input
+                                    id="title"
+                                    value={title}
+                                    onChange={(e) => setTitle(e.target.value)}
+                                    placeholder="Ex: Viagem para Europa"
+                                    className="h-10"
+                                    required
+                                />
                             </div>
-                            <div className="border rounded-md p-4 max-h-[150px] overflow-y-auto space-y-2">
-                                {categories.length === 0 ? (
-                                    <p className="text-sm text-muted-foreground text-center py-2">
-                                        Nenhuma categoria de investimento encontrada.
-                                    </p>
-                                ) : (
-                                    categories.map((category) => (
-                                        <div key={category.id} className="flex items-center space-x-2">
-                                            <Checkbox
-                                                id={`cat-${category.id}`}
-                                                checked={selectedCategoryIds.includes(category.id)}
-                                                onCheckedChange={() => toggleCategory(category.id)}
-                                            />
-                                            <Label
-                                                htmlFor={`cat-${category.id}`}
-                                                className="text-sm font-normal cursor-pointer"
-                                            >
-                                                {category.nome}
-                                            </Label>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="targetAmount" className="text-xs font-medium text-muted-foreground">Valor Alvo</Label>
+                                    <div className="relative">
+                                        <Wallet className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                                        <Input
+                                            id="targetAmount"
+                                            type="number"
+                                            step="0.01"
+                                            value={targetAmount}
+                                            onChange={(e) => setTargetAmount(e.target.value)}
+                                            placeholder="0,00"
+                                            className="pl-9 h-10"
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="deadline" className="text-xs font-medium text-muted-foreground">Data Limite</Label>
+                                    <div className="relative">
+                                        <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                                        <Input
+                                            id="deadline"
+                                            type="date"
+                                            value={deadline}
+                                            onChange={(e) => setDeadline(e.target.value)}
+                                            className="pl-9 h-10 block"
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <Label className="text-xs font-medium text-muted-foreground">Categorias Vinculadas</Label>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-6 text-xs gap-1 hover:text-primary"
+                                        onClick={() => setIsCategoryModalOpen(true)}
+                                    >
+                                        <Plus className="h-3 w-3" /> Nova Categoria
+                                    </Button>
+                                </div>
+                                <div className="border border-border/50 rounded-xl bg-muted/20 p-4 max-h-[150px] overflow-y-auto space-y-2">
+                                    {categories.length === 0 ? (
+                                        <div className="text-center py-4">
+                                            <p className="text-sm text-muted-foreground">
+                                                Nenhuma categoria de investimento encontrada.
+                                            </p>
                                         </div>
-                                    ))
-                                )}
+                                    ) : (
+                                        categories.map((category) => (
+                                            <div key={category.id} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                                                <Checkbox
+                                                    id={`cat-${category.id}`}
+                                                    checked={selectedCategoryIds.includes(category.id)}
+                                                    onCheckedChange={() => toggleCategory(category.id)}
+                                                    className="border-muted-foreground/50"
+                                                />
+                                                <Label
+                                                    htmlFor={`cat-${category.id}`}
+                                                    className="text-sm font-medium cursor-pointer flex-1"
+                                                >
+                                                    {category.nome}
+                                                </Label>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    O saldo destas categorias será somado para calcular o progresso.
+                                </p>
                             </div>
-                            <p className="text-xs text-muted-foreground">
-                                Selecione as categorias que contribuirão para esta meta.
-                            </p>
+
+                            {error && (
+                                <Alert variant="destructive" className="rounded-xl">
+                                    <AlertCircle className="h-4 w-4" />
+                                    <AlertTitle>Erro</AlertTitle>
+                                    <AlertDescription>{error}</AlertDescription>
+                                </Alert>
+                            )}
                         </div>
 
-                        {error && (
-                            <Alert variant="destructive">
-                                <AlertCircle className="h-4 w-4" />
-                                <AlertTitle>Erro</AlertTitle>
-                                <AlertDescription>{error}</AlertDescription>
-                            </Alert>
-                        )}
-
-                        <DialogFooter>
-                            <Button type="submit" disabled={loading}>
-                                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (goalToEdit ? "Salvar Alterações" : "Criar Meta")}
+                        <DialogFooter className="px-6 py-4 border-t border-border/40 bg-muted/5 gap-2">
+                            <Button type="button" variant="ghost" onClick={onClose} disabled={loading}>
+                                Cancelar
+                            </Button>
+                            <Button type="submit" disabled={loading} className="bg-primary hover:bg-primary/90">
+                                {loading ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Salvando...
+                                    </>
+                                ) : (
+                                    goalToEdit ? "Salvar Alterações" : "Criar Meta"
+                                )}
                             </Button>
                         </DialogFooter>
                     </form>

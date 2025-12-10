@@ -6,7 +6,11 @@ create or replace function create_investment_goal(
   p_project_id uuid,
   p_category_ids uuid[],
   p_goal_id uuid default null
-) returns uuid as $$
+) returns uuid 
+language plpgsql 
+security definer 
+SET search_path = public
+as $$
 declare
   v_goal_id uuid;
   v_user_id uuid;

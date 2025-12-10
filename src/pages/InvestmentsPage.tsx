@@ -2,44 +2,12 @@ import { useState, useEffect, useCallback } from "react"
 import { supabase } from "@/lib/supabase"
 import { useAuth } from "@/contexts/auth-hooks"
 import { useProject } from "@/contexts/project-hooks"
+import { useDate } from "@/contexts/date-hooks"
 import { MonthSelector } from "@/components/MonthSelector"
 import { formatCurrency } from "@/lib/format"
 import { applyProjectScope, getMonthRange } from "@/lib/supabase-helpers"
 
-interface TransactionInvestment {
-    id: string
-    valor: number
-    tipo: "receita" | "despesa"
-    data: string
-    categories: { is_investment?: boolean } | { is_investment?: boolean }[] | null
-    categoria_id?: string | null
-    descricao?: string
-    pago?: boolean
-    project_id?: string | null
-    related_transaction_id?: string | null
-    user_id?: string
-}
-
-interface TransactionInvestmentFull {
-    id: string
-    descricao: string
-    valor: number
-    data: string
-    categoria_id: string | null
-    categories: {
-        id: string
-        nome: string
-        cor: string
-        is_investment: boolean
-    } | {
-        id: string
-        nome: string
-        cor: string
-        is_investment: boolean
-    }[] | null
-    project_id?: string | null
-    user_id?: string
-}
+ 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
@@ -53,12 +21,13 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { TrendingUp, TrendingDown, DollarSign, Plus, Loader2, LineChart } from "lucide-react"
-import { NewTransactionModal } from "@/components/NewTransactionModal"
+import { InvestmentModal } from "@/components/investments/InvestmentModal"
 import { NewGoalModal } from "@/components/NewGoalModal"
 import { GoalCard } from "@/components/GoalCard"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 // Component for simulation
 import { InvestmentSimulator } from "@/components/InvestmentSimulator"
+import { InvestmentsList } from "@/components/investments/InvestmentsList"
 import {
     AreaChart,
     Area,
@@ -99,6 +68,14 @@ interface MonthlyHistory {
     accumulatedRealized: number
 }
 
+interface InvestmentRecord {
+    id: string
+    name: string
+    type: string
+    amount: number
+    date: string
+}
+
 interface Category {
     id: string
     nome: string
@@ -118,7 +95,7 @@ interface Goal {
 export function InvestmentsPage() {
     const { user } = useAuth()
     const { selectedProject } = useProject()
-    const [currentDate, setCurrentDate] = useState(new Date())
+    const { currentDate, setCurrentDate } = useDate()
     const [loading, setLoading] = useState(true)
 
     // Monthly View State
@@ -132,8 +109,7 @@ export function InvestmentsPage() {
     const [totalAccumulatedRealized, setTotalAccumulatedRealized] = useState(0)
     const [performance, setPerformance] = useState(0)
 
-    const [isModalOpen, setIsModalOpen] = useState(false)
-    const [defaultCategoryId, setDefaultCategoryId] = useState<string>("")
+    const [isInvestmentModalOpen, setIsInvestmentModalOpen] = useState(false)
 
     // Goals State
     const [goals, setGoals] = useState<Goal[]>([])
@@ -193,56 +169,45 @@ export function InvestmentsPage() {
             const percent = Number(profile?.investimento_percentual || 0) / 100
             const base = profile?.investimento_base || "SOBRA"
 
-            // Fetch ALL transactions with categories
-            let query = supabase
+            // Fetch ALL transactions for income/expense only (to compute goal)
+            let txForGoalQuery = supabase
                 .from("transactions")
-                .select(`
-                    id,
-                    valor,
-                    tipo,
-                    data,
-                    categories (
-                        is_investment
-                    )
-                `)
+                .select("valor, tipo, data")
                 .eq("user_id", user.id)
                 .order("data", { ascending: true })
 
-            if (selectedProject) {
-                query = query.eq("project_id", selectedProject.id)
-            } else {
-                query = query.is("project_id", null)
-            }
+            txForGoalQuery = applyProjectScope(txForGoalQuery, selectedProject)
 
-            const { data: allTxs, error } = await query
+            const { data: txForGoal } = await txForGoalQuery
 
-            if (error) throw error
-
-            // Process Data
             const monthlyMap = new Map<string, { income: number, expense: number, investment: number }>()
 
-            allTxs?.forEach((tx: TransactionInvestment) => {
+            txForGoal?.forEach((tx: { valor: number; tipo: "receita" | "despesa"; data: string }) => {
                 const date = new Date(tx.data)
-                // Use UTC to avoid timezone issues shifting the month
                 const monthKey = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`
-
                 const current = monthlyMap.get(monthKey) || { income: 0, expense: 0, investment: 0 }
-
                 const val = Number(tx.valor)
-                const categories = Array.isArray(tx.categories) ? tx.categories[0] : tx.categories
-                const isInvestment = categories?.is_investment
+                if (tx.tipo === "receita") current.income += val
+                else current.expense += val
+                monthlyMap.set(monthKey, current)
+            })
 
-                if (isInvestment) {
-                    // Assuming investment is usually an outflow (expense) or explicitly marked
-                    // We sum it as 'investment' regardless of type 'despesa'
-                    current.investment += val
-                } else {
-                    if (tx.tipo === "receita") {
-                        current.income += val
-                    } else if (tx.tipo === "despesa") {
-                        current.expense += val
-                    }
-                }
+            // Fetch investments table and add to investment totals
+            let invSummaryQuery = supabase
+                .from("investments")
+                .select("amount, date")
+                .eq("user_id", user.id)
+                .order("date", { ascending: true })
+
+            invSummaryQuery = applyProjectScope(invSummaryQuery, selectedProject)
+
+            const { data: allInvestments } = await invSummaryQuery
+
+            allInvestments?.forEach((inv: { amount: number; date: string }) => {
+                const date = new Date(inv.date)
+                const monthKey = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`
+                const current = monthlyMap.get(monthKey) || { income: 0, expense: 0, investment: 0 }
+                current.investment += Number(inv.amount)
                 monthlyMap.set(monthKey, current)
             })
 
@@ -343,86 +308,56 @@ export function InvestmentsPage() {
             }
             setGoal(calculatedGoal)
 
-            // 3. Fetch Investment Transactions
-            let invQuery = supabase
-                .from("transactions")
-                .select(`
-                    id,
-                    descricao,
-                    valor,
-                    data,
-                    categoria_id,
-                    categories (
-                        id,
-                        nome,
-                        cor,
-                        is_investment
-                    )
-                `)
+            // 3. Fetch investments for the month (EXCLUSIVE source)
+            let invTableQuery = supabase
+                .from("investments")
+                .select("id, name, type, amount, date")
                 .eq("user_id", user.id)
-                .gte("data", startOfMonth)
-                .lte("data", endOfMonth)
-                .order("data", { ascending: false })
+                .gte("date", startOfMonth)
+                .lte("date", endOfMonth)
+                .order("date", { ascending: false })
 
-            invQuery = applyProjectScope(invQuery, selectedProject)
+            invTableQuery = applyProjectScope(invTableQuery, selectedProject)
 
-            const { data: investmentTxs, error } = await invQuery
+            const { data: monthlyInvestments } = await invTableQuery
 
-            if (error) throw error
-
-            // Filter and Group
             let totalRealized = 0
             const groupedMap = new Map<string, GroupedInvestment>()
-            let firstInvestmentCatId = ""
 
-            investmentTxs?.forEach((tx: TransactionInvestmentFull) => {
-                const categories = Array.isArray(tx.categories) ? tx.categories[0] : tx.categories
-                if (categories?.is_investment) {
-                    const val = Number(tx.valor)
-                    totalRealized += val
+            const typeColors: Record<string, string> = {
+                "Renda Fixa": "#22c55e",
+                "Ações": "#3b82f6",
+                "FIIs": "#a855f7",
+                "Cripto": "#ef4444",
+                "Fundos": "#06b6d4",
+                "Outros": "#64748b",
+            }
 
-                    if (!firstInvestmentCatId) firstInvestmentCatId = categories.id
+            monthlyInvestments?.forEach((inv: InvestmentRecord) => {
+                const val = Number(inv.amount)
+                totalRealized += val
 
-                    const catName = categories.nome
-                    // Explicitly type the new object to match GroupedInvestment
-                    const current: GroupedInvestment = groupedMap.get(catName) || {
-                        categoryName: catName,
-                        categoryColor: categories.cor,
-                        total: 0,
-                        transactions: []
-                    }
-
-                    current.total += val
-                    current.transactions.push({
-                        id: tx.id,
-                        descricao: tx.descricao,
-                        valor: val,
-                        data: tx.data,
-                        categories: {
-                            nome: categories.nome,
-                            cor: categories.cor
-                        }
-                    })
-                    groupedMap.set(catName, current)
+                const typeName = inv.type || "Outros"
+                const current: GroupedInvestment = groupedMap.get(typeName) || {
+                    categoryName: typeName,
+                    categoryColor: typeColors[typeName] || "#64748b",
+                    total: 0,
+                    transactions: []
                 }
+
+                current.total += val
+                current.transactions.push({
+                    id: inv.id,
+                    descricao: inv.name,
+                    valor: val,
+                    data: inv.date,
+                    categories: { nome: typeName, cor: current.categoryColor }
+                })
+                groupedMap.set(typeName, current)
             })
 
             setRealized(totalRealized)
             setInvestments(Array.from(groupedMap.values()))
-
-            // If we didn't find any investment transaction, we should try to find ANY investment category to set as default
-            if (!firstInvestmentCatId) {
-                const { data: anyInvCat } = await supabase
-                    .from("categories")
-                    .select("id")
-                    .eq("user_id", user.id)
-                    .eq("is_investment", true)
-                    .limit(1)
-                    .single()
-
-                if (anyInvCat) firstInvestmentCatId = anyInvCat.id
-            }
-            setDefaultCategoryId(firstInvestmentCatId)
 
         } catch (err) {
             console.error("Error fetching investment data:", err)
@@ -453,20 +388,32 @@ export function InvestmentsPage() {
     }
 
     return (
-        <div className="space-y-8 pb-20 md:pb-0">
+        <div className="space-y-8 p-1 pb-20 md:pb-0">
             <div className="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
-                <h1 className="text-3xl font-bold tracking-tight text-foreground">Investimentos</h1>
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight text-foreground">Investimentos</h1>
+                    <p className="text-muted-foreground mt-1">Gerencie seus aportes e acompanhe a evolução patrimonial.</p>
+                </div>
                 <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
                     <MonthSelector currentDate={currentDate} onMonthChange={setCurrentDate} />
-                    <Button onClick={() => setIsModalOpen(true)} className="w-full md:w-auto gap-2">
+                    <Button onClick={() => setIsInvestmentModalOpen(true)} className="w-full md:w-auto gap-2 shadow-sm">
                         <Plus className="h-4 w-4" /> Novo Aporte
                     </Button>
                 </div>
             </div>
 
+            <InvestmentModal
+                isOpen={isInvestmentModalOpen}
+                onClose={() => setIsInvestmentModalOpen(false)}
+                onSuccess={() => {
+                    fetchMonthlyData()
+                    fetchHistoricalData()
+                }}
+            />
+
             <Tabs defaultValue="overview" className="space-y-8">
                 <div className="w-full overflow-x-auto pb-2">
-                    <TabsList className="w-full justify-start md:w-auto">
+                    <TabsList className="w-full justify-start md:w-auto bg-muted/50 p-1">
                         <TabsTrigger value="overview">Visão Geral</TabsTrigger>
                         <TabsTrigger value="goals">Metas</TabsTrigger>
                         <TabsTrigger value="simulator">Simulador</TabsTrigger>
@@ -474,57 +421,65 @@ export function InvestmentsPage() {
                 </div>
 
                 <TabsContent value="overview">
-                    <div className="space-y-4">
-                    <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-                        <Card className="p-4 md:p-6">
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium text-muted-foreground">Patrimônio Acumulado</CardTitle>
-                                <TrendingUp className="h-4 w-4 text-emerald-500" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold text-foreground">{formatCurrency(totalAccumulatedRealized)}</div>
-                                <p className="text-xs text-muted-foreground">Total histórico investido</p>
-                            </CardContent>
-                        </Card>
-                        <Card className="p-4 md:p-6">
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium text-muted-foreground">Meta Total</CardTitle>
-                                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold text-foreground">{formatCurrency(totalAccumulatedGoal)}</div>
-                                <p className="text-xs text-muted-foreground">Soma de todas as metas</p>
-                            </CardContent>
-                        </Card>
-                        <Card className="p-4 md:p-6">
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium text-muted-foreground">Progresso Geral</CardTitle>
-                                <LineChart className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold text-foreground">{performance.toFixed(1)}%</div>
-                                <Progress value={Math.min(performance, 100)} className="h-2 mt-2" />
-                            </CardContent>
-                        </Card>
-                        <Card className="p-4 md:p-6">
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium text-muted-foreground">Aportes (Mês Atual)</CardTitle>
-                                <DollarSign className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold text-foreground">{formatCurrency(realized)}</div>
-                                <p className="text-xs text-muted-foreground">
-                                    Meta: {formatCurrency(goal)}
-                                </p>
-                            </CardContent>
-                        </Card>
-                    </div>
+                    <div className="space-y-6">
+                        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+                            <Card className="rounded-xl border-border/50 bg-card shadow-sm hover:shadow-md transition-all duration-200">
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-sm font-medium text-muted-foreground">Patrimônio Acumulado</CardTitle>
+                                    <div className="p-2 bg-emerald-500/10 rounded-lg">
+                                        <TrendingUp className="h-4 w-4 text-emerald-500" />
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold text-foreground">{formatCurrency(totalAccumulatedRealized)}</div>
+                                    <p className="text-xs text-muted-foreground mt-1">Total histórico investido</p>
+                                </CardContent>
+                            </Card>
+                            <Card className="rounded-xl border-border/50 bg-card shadow-sm hover:shadow-md transition-all duration-200">
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-sm font-medium text-muted-foreground">Meta Total</CardTitle>
+                                    <div className="p-2 bg-primary/10 rounded-lg">
+                                        <TrendingUp className="h-4 w-4 text-primary" />
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold text-foreground">{formatCurrency(totalAccumulatedGoal)}</div>
+                                    <p className="text-xs text-muted-foreground mt-1">Soma de todas as metas</p>
+                                </CardContent>
+                            </Card>
+                            <Card className="rounded-xl border-border/50 bg-card shadow-sm hover:shadow-md transition-all duration-200">
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-sm font-medium text-muted-foreground">Progresso Geral</CardTitle>
+                                    <div className="p-2 bg-primary/10 rounded-lg">
+                                        <LineChart className="h-4 w-4 text-primary" />
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold text-foreground">{performance.toFixed(1)}%</div>
+                                    <Progress value={Math.min(performance, 100)} className="h-2 mt-2 bg-primary/20" />
+                                </CardContent>
+                            </Card>
+                            <Card className="rounded-xl border-border/50 bg-card shadow-sm hover:shadow-md transition-all duration-200">
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-sm font-medium text-muted-foreground">Aportes (Mês Atual)</CardTitle>
+                                    <div className="p-2 bg-primary/10 rounded-lg">
+                                        <DollarSign className="h-4 w-4 text-primary" />
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold text-foreground">{formatCurrency(realized)}</div>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        Meta: {formatCurrency(goal)}
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        </div>
 
-                        <Card className="col-span-4 rounded-xl border-border/50 bg-card shadow-sm">
-                            <CardHeader>
+                        <Card className="col-span-4 rounded-xl border-border/50 bg-card shadow-sm overflow-hidden">
+                            <CardHeader className="border-b border-border/40 bg-muted/20">
                                 <CardTitle className="text-foreground">Evolução Patrimonial</CardTitle>
                             </CardHeader>
-                            <CardContent className="pl-2">
+                            <CardContent className="pl-0 pt-6 pr-6">
                                 <div className="h-[360px] md:h-[400px] w-full">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <AreaChart data={historicalData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
@@ -583,6 +538,16 @@ export function InvestmentsPage() {
                                 </div>
                             </CardContent>
                         </Card>
+                        <div className="mt-6">
+                            <Card className="rounded-xl border-border/50 bg-card shadow-sm">
+                                <CardHeader>
+                                    <CardTitle className="text-foreground">Investimentos</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <InvestmentsList onChanged={() => { fetchMonthlyData(); fetchHistoricalData(); }} />
+                                </CardContent>
+                            </Card>
+                        </div>
                     </div>
                 </TabsContent>
 
@@ -621,21 +586,11 @@ export function InvestmentsPage() {
                 </TabsContent>
 
                 <TabsContent value="statement">
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                         <div className="flex items-center justify-between">
                             <MonthSelector currentDate={currentDate} onMonthChange={setCurrentDate} />
-                            <div className="flex items-center gap-2">
-                                <NewTransactionModal
-                                    open={isModalOpen}
-                                    onOpenChange={setIsModalOpen}
-                                    onSuccess={() => {
-                                        fetchMonthlyData()
-                                        fetchHistoricalData()
-                                    }}
-                                    defaultCategoryId={defaultCategoryId}
-                                    isInvestmentMode={true}
-                                />
-                                <Button onClick={() => setIsModalOpen(true)} className="gap-2 rounded-lg shadow-sm hover:shadow-md transition-all">
+                        <div className="flex items-center gap-2">
+                                <Button onClick={() => setIsInvestmentModalOpen(true)} className="gap-2 rounded-lg shadow-sm hover:shadow-md transition-all">
                                     <Plus className="h-4 w-4" />
                                     Novo Aporte
                                 </Button>
@@ -643,69 +598,75 @@ export function InvestmentsPage() {
                         </div>
 
                         <div className="grid gap-4 md:grid-cols-3">
-                            <Card className="rounded-xl border-border/50 bg-card shadow-sm">
+                            <Card className="rounded-xl border-border/50 bg-card shadow-sm hover:shadow-md transition-all duration-200">
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                     <CardTitle className="text-sm font-medium text-muted-foreground">Meta do Mês</CardTitle>
-                                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                                    <div className="p-2 bg-primary/10 rounded-lg">
+                                        <DollarSign className="h-4 w-4 text-primary" />
+                                    </div>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="text-2xl font-bold text-foreground">{formatCurrency(goal)}</div>
-                                    <p className="text-xs text-muted-foreground">Baseado no seu perfil</p>
+                                    <p className="text-xs text-muted-foreground mt-1">Baseado no seu perfil</p>
                                 </CardContent>
                             </Card>
-                            <Card className="rounded-xl border-border/50 bg-card shadow-sm">
+                            <Card className="rounded-xl border-border/50 bg-card shadow-sm hover:shadow-md transition-all duration-200">
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                     <CardTitle className="text-sm font-medium text-muted-foreground">Aporte Realizado</CardTitle>
-                                    <TrendingUp className="h-4 w-4 text-emerald-500" />
+                                    <div className="p-2 bg-emerald-500/10 rounded-lg">
+                                        <TrendingUp className="h-4 w-4 text-emerald-500" />
+                                    </div>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="text-2xl font-bold text-foreground">{formatCurrency(realized)}</div>
-                                    <Progress value={progress} className="mt-2" />
+                                    <Progress value={progress} className="mt-2 h-2 bg-emerald-500/20 [&>div]:bg-emerald-500" />
                                     <p className="text-xs text-muted-foreground mt-1">{progress.toFixed(0)}% da meta</p>
                                 </CardContent>
                             </Card>
-                            <Card className="rounded-xl border-border/50 bg-card shadow-sm">
+                            <Card className="rounded-xl border-border/50 bg-card shadow-sm hover:shadow-md transition-all duration-200">
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                     <CardTitle className="text-sm font-medium text-muted-foreground">Diferença</CardTitle>
-                                    {difference >= 0 ? (
-                                        <TrendingUp className="h-4 w-4 text-emerald-500" />
-                                    ) : (
-                                        <TrendingDown className="h-4 w-4 text-rose-500" />
-                                    )}
+                                    <div className={`p-2 rounded-lg ${difference >= 0 ? "bg-emerald-500/10" : "bg-rose-500/10"}`}>
+                                        {difference >= 0 ? (
+                                            <TrendingUp className={`h-4 w-4 ${difference >= 0 ? "text-emerald-500" : "text-rose-500"}`} />
+                                        ) : (
+                                            <TrendingDown className={`h-4 w-4 ${difference >= 0 ? "text-emerald-500" : "text-rose-500"}`} />
+                                        )}
+                                    </div>
                                 </CardHeader>
                                 <CardContent>
                                     <div className={`text-2xl font-bold ${difference >= 0 ? "text-emerald-500" : "text-rose-500"}`}>{formatCurrency(difference)}</div>
-                                    <p className="text-xs text-muted-foreground">{difference >= 0 ? "Meta atingida!" : "Falta para a meta"}</p>
+                                    <p className="text-xs text-muted-foreground mt-1">{difference >= 0 ? "Meta atingida!" : "Falta para a meta"}</p>
                                 </CardContent>
                             </Card>
                         </div>
 
                         <div className="grid gap-4 md:grid-cols-3">
-                            <Card className="rounded-xl border-border/50 bg-card shadow-sm">
+                            <Card className="rounded-xl border-border/50 bg-card shadow-sm hover:shadow-md transition-all duration-200">
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                     <CardTitle className="text-sm font-medium text-muted-foreground">Categorias de Investimento</CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="text-2xl font-bold text-foreground">{investments.length}</div>
-                                    <p className="text-xs text-muted-foreground">Ativas neste mês</p>
+                                    <p className="text-xs text-muted-foreground mt-1">Ativas neste mês</p>
                                 </CardContent>
                             </Card>
-                            <Card className="rounded-xl border-border/50 bg-card shadow-sm">
+                            <Card className="rounded-xl border-border/50 bg-card shadow-sm hover:shadow-md transition-all duration-200">
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                     <CardTitle className="text-sm font-medium text-muted-foreground">Aportes do Mês</CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="text-2xl font-bold text-foreground">{investments.reduce((acc, g) => acc + g.transactions.length, 0)}</div>
-                                    <p className="text-xs text-muted-foreground">Total de lançamentos</p>
+                                    <p className="text-xs text-muted-foreground mt-1">Total de lançamentos</p>
                                 </CardContent>
                             </Card>
-                            <Card className="rounded-xl border-border/50 bg-card shadow-sm">
+                            <Card className="rounded-xl border-border/50 bg-card shadow-sm hover:shadow-md transition-all duration-200">
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                     <CardTitle className="text-sm font-medium text-muted-foreground">Ticket Médio</CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="text-2xl font-bold text-foreground">{formatCurrency((investments.reduce((acc, g) => acc + g.transactions.length, 0) > 0 ? (realized / investments.reduce((acc, g) => acc + g.transactions.length, 0)) : 0))}</div>
-                                    <p className="text-xs text-muted-foreground">Valor médio por aporte</p>
+                                    <p className="text-xs text-muted-foreground mt-1">Valor médio por aporte</p>
                                 </CardContent>
                             </Card>
                         </div>
@@ -713,37 +674,37 @@ export function InvestmentsPage() {
                         <div className="space-y-4">
                             <h3 className="text-lg font-semibold">Transações de Investimento</h3>
                             {investments.length === 0 ? (
-                                <div className="text-center text-muted-foreground py-8 border border-border/50 rounded-xl bg-zinc-900/50">Nenhum investimento encontrado neste mês.</div>
+                                <div className="text-center text-muted-foreground py-8 border border-border/50 rounded-xl bg-card">Nenhum investimento encontrado neste mês.</div>
                             ) : (
                                 investments.map((group) => (
-                                    <Card key={group.categoryName} className="rounded-xl border-border/50 bg-card shadow-sm">
-                                    <CardHeader className="pb-2">
+                                    <Card key={group.categoryName} className="rounded-xl border-border/50 bg-card shadow-sm overflow-hidden">
+                                    <CardHeader className="pb-2 bg-muted/20 border-b border-border/40">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">
                                                 <div className="h-3 w-3 rounded-full ring-1 ring-white/20" style={{ backgroundColor: group.categoryColor }} />
                                                 <CardTitle className="text-lg text-foreground">{group.categoryName}</CardTitle>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <Badge variant="secondary" className="bg-muted/50">{group.transactions.length} lançamentos</Badge>
+                                                <Badge variant="secondary" className="bg-muted/50 border-border/40">{group.transactions.length} lançamentos</Badge>
                                                 <span className="font-bold text-foreground">{formatCurrency(group.total)}</span>
                                             </div>
                                         </div>
                                     </CardHeader>
-                                    <CardContent>
+                                    <CardContent className="p-0">
                                         <Table>
-                                            <TableHeader>
+                                            <TableHeader className="bg-muted/50">
                                                     <TableRow className="hover:bg-muted/30 border-border/40">
-                                                        <TableHead className="text-muted-foreground">Data</TableHead>
+                                                        <TableHead className="text-muted-foreground pl-6">Data</TableHead>
                                                         <TableHead className="text-muted-foreground">Descrição</TableHead>
-                                                        <TableHead className="text-right text-muted-foreground">Valor</TableHead>
+                                                        <TableHead className="text-right text-muted-foreground pr-6">Valor</TableHead>
                                                     </TableRow>
                                                 </TableHeader>
                                                 <TableBody>
                                                     {group.transactions.map((tx) => (
                                                         <TableRow key={tx.id} className="hover:bg-muted/30 border-border/40 transition-colors">
-                                                            <TableCell className="text-muted-foreground">{new Date(tx.data).toLocaleDateString("pt-BR")}</TableCell>
+                                                            <TableCell className="text-muted-foreground pl-6">{new Date(tx.data).toLocaleDateString("pt-BR")}</TableCell>
                                                             <TableCell className="text-foreground">{tx.descricao}</TableCell>
-                                                            <TableCell className="text-right font-medium text-foreground">{formatCurrency(tx.valor)}</TableCell>
+                                                            <TableCell className="text-right font-medium text-foreground pr-6">{formatCurrency(tx.valor)}</TableCell>
                                                         </TableRow>
                                                     ))}
                                                 </TableBody>

@@ -1,3 +1,4 @@
+import { useDate } from "@/contexts/date-hooks"
 import { useEffect, useState, useMemo } from "react"
 import { useAuth } from "@/contexts/auth-hooks"
 import { useProject } from "@/contexts/project-hooks"
@@ -39,7 +40,7 @@ export function AnalyticsPage() {
     const { user, profile } = useAuth()
     const { selectProject } = useProject()
     const navigate = useNavigate()
-    const [currentDate, setCurrentDate] = useState(new Date())
+    const { currentDate, setCurrentDate } = useDate()
     const [loading, setLoading] = useState(true)
     const [projects, setProjects] = useState<Project[]>([])
     const [transactions, setTransactions] = useState<Transaction[]>([])

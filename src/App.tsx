@@ -10,6 +10,7 @@ import { Suspense, lazy, useEffect, useState } from "react"
 import { Loading } from "@/components/Loading"
 import { ProjectProvider } from "@/contexts/ProjectContext"
 import { PWAProvider } from "@/contexts/PWAContext"
+import { DateProvider } from "@/contexts/DateContext"
 import { AnalyticsPage } from "@/pages/AnalyticsPage"
 import { AccountRecovery } from "@/pages/AccountRecovery"
 import { ForgotPasswordPage } from "@/pages/auth/ForgotPasswordPage"
@@ -22,7 +23,7 @@ import { SplashScreen } from "@/components/SplashScreen"
 const Dashboard = lazy(() => import("@/pages/Dashboard").then(module => ({ default: module.Dashboard })))
 const Transactions = lazy(() => import("@/pages/Transactions").then(module => ({ default: module.Transactions })))
 const Recurrences = lazy(() => import("@/pages/Recurrences").then(module => ({ default: module.Recurrences })))
-const Categories = lazy(() => import("@/pages/Categories").then(module => ({ default: module.Categories })))
+const CategoriesPage = lazy(() => import("@/pages/CategoriesPage"))
 const InvestmentsPage = lazy(() => import("@/pages/InvestmentsPage").then(module => ({ default: module.InvestmentsPage })))
 const Settings = lazy(() => import("@/pages/Settings").then(module => ({ default: module.Settings })))
 const LandingPage = lazy(() => import("@/pages/LandingPage").then(module => ({ default: module.default })))
@@ -31,6 +32,7 @@ const TermsPage = lazy(() => import("@/pages/Terms").then(module => ({ default: 
 const PrivacyPage = lazy(() => import("@/pages/Privacy").then(module => ({ default: module.PrivacyPage })))
 const AboutPage = lazy(() => import("@/pages/About").then(module => ({ default: module.AboutPage })))
 const ContactPage = lazy(() => import("@/pages/Contact").then(module => ({ default: module.ContactPage })))
+const MenuPage = lazy(() => import("@/pages/MenuPage"))
 
 function AppRoutes() {
   const { loading, user } = useAuth()
@@ -96,8 +98,9 @@ function AppRoutes() {
           <Route path="analytics" element={<AnalyticsPage />} />
           <Route path="transactions" element={<Transactions />} />
           <Route path="recurrences" element={<Recurrences />} />
-          <Route path="categories" element={<Categories />} />
+          <Route path="categories" element={<CategoriesPage />} />
           <Route path="investments" element={<InvestmentsPage />} />
+          <Route path="menu" element={<MenuPage />} />
           <Route path="settings" element={<Settings />} />
           <Route path="demo" element={<ShadcnDemo />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
@@ -131,7 +134,9 @@ function App() {
           )}
           <AutoLogout />
           <PWAProvider>
-            <AppRoutes />
+            <DateProvider>
+              <AppRoutes />
+            </DateProvider>
           </PWAProvider>
           <Toaster />
         </ProjectProvider>

@@ -89,7 +89,9 @@ export function NewTransactionModal({
     const filteredCategories = categories.filter(cat => {
         const catTipo = resolveCategoryTipo(cat)
         const expected = type === 'receita' ? 'income' : 'expense'
-        return catTipo === expected
+        const matchesType = catTipo === expected
+        const isInvestment = (cat as unknown as { is_investment?: boolean }).is_investment === true
+        return matchesType && !isInvestment
     })
 
     // Reset categoryId if the selected category doesn't match the new transaction type
@@ -111,7 +113,7 @@ export function NewTransactionModal({
         try {
             const { data, error } = await supabase
                 .from("categories")
-                .select("*")
+                .select("id, nome, cor, tipo, is_investment")
                 .eq("user_id", user.id)
                 .order("nome")
 

@@ -60,7 +60,8 @@ serve(async (req) => {
       const userId = session.client_reference_id
       const customerId = session.customer
 
-      console.log(`💰 Pagamento recebido para usuário: ${userId}`)
+      // console.log(`💰 Pagamento recebido para usuário: ${userId}`) // REMOVED FOR SECURITY (PII LOGGING)
+
 
       if (userId) {
         // Atualiza o plano no banco

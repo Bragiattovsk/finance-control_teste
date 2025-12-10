@@ -1,9 +1,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { supabase } from "@/lib/supabase"
 import { useAuth } from "@/contexts/auth-hooks"
-import { useProject } from "@/contexts/project-hooks"
-import { applyProjectScope } from "@/lib/supabase-helpers"
-import { Project, Category } from "@/types"
+import { Category } from "@/types"
 
 // Using shared Category type from '@/types'
 // Extending locally with optional goal reference when present in queries
@@ -18,7 +16,6 @@ interface UseCategoriesReturn {
 
 export function useCategories(): UseCategoriesReturn {
     const { user } = useAuth()
-    const { selectedProject } = useProject()
     const [categories, setCategories] = useState<CategoryWithGoal[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -30,15 +27,11 @@ export function useCategories(): UseCategoriesReturn {
             setLoading(true)
             setError(null)
 
-            let query = supabase
+            const { data, error } = await supabase
                 .from("categories")
-                .select("*")
+                .select("id, nome, cor, tipo, is_investment, goal_id")
                 .eq("user_id", user.id)
                 .order("nome")
-
-            query = applyProjectScope(query, selectedProject as Project | null)
-
-            const { data, error } = await query
 
             if (error) throw error
 
@@ -49,11 +42,11 @@ export function useCategories(): UseCategoriesReturn {
         } finally {
             setLoading(false)
         }
-    }, [user, selectedProject])
+    }, [user])
 
     useEffect(() => {
         fetchCategories()
-    }, [user, selectedProject, fetchCategories])
+    }, [user, fetchCategories])
 
     return {
         categories,

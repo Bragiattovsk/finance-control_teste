@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom"
-import { Home, List, Plus, TrendingUp, Menu } from "lucide-react"
+import { Home, List, Plus, TrendingUp, LayoutGrid } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface MobileBottomNavProps {
@@ -30,8 +30,8 @@ export function MobileBottomNav({ onOpenNewTransaction }: MobileBottomNavProps) 
         },
         {
             label: "Menu",
-            path: "/settings",
-            icon: Menu,
+            path: "/menu",
+            icon: LayoutGrid,
         },
     ]
 

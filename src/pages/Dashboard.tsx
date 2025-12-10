@@ -11,9 +11,11 @@ import { useRecurrenceCheck } from "@/hooks/useRecurrenceCheck"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import { Progress } from "@/components/ui/progress"
 
 
 import { useEffect, useState } from "react"
+import { useDate } from "@/contexts/date-hooks"
 import { MonthSelector } from "@/components/MonthSelector"
 import { useAuth } from "@/contexts/auth-hooks"
 import { DashboardGrid } from "@/components/dashboard/DashboardGrid"
@@ -27,10 +29,10 @@ import { BalanceDetailsModal } from "@/components/dashboard/BalanceDetailsModal"
 import { BalanceSparkline } from "@/components/dashboard/BalanceSparkline"
 
 export function Dashboard() {
-    const [currentDate, setCurrentDate] = useState(new Date())
+    const { currentDate, setCurrentDate } = useDate()
     const [isTransferModalOpen, setIsTransferModalOpen] = useState(false)
     const [isBalanceModalOpen, setIsBalanceModalOpen] = useState(false)
-    const { income, expense, balance, investment, loading, refetch } = useInvestment(currentDate)
+    const { income, expense, balance, investment, realizedInvestment, loading, refetch } = useInvestment(currentDate)
     const { walletBalance, balanceHistory, refetch: refetchAnalytics } = useDashboardAnalytics(currentDate)
 
     useRecurrenceCheck(refetch)
@@ -195,10 +197,16 @@ export function Dashboard() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-primary">{formatCurrency(investment)}</div>
-                        <p className="text-xs text-primary/70 mt-1 font-medium">
-                            Sugestão para {capitalizedMonth}
-                        </p>
+                        <div className="text-2xl font-bold text-primary">{formatCurrency(realizedInvestment)}</div>
+                        <div className="flex flex-col gap-1">
+                            <p className="text-xs text-primary/70 mt-1 font-medium">
+                                de {formatCurrency(investment)} (Meta sugerida)
+                            </p>
+                            <Progress 
+                                value={investment === 0 ? 0 : Math.min((realizedInvestment / investment) * 100, 100)} 
+                                className="h-2 mt-1 bg-primary/20 [&>div]:bg-primary"
+                            />
+                        </div>
                     </CardContent>
                 </Card>
 

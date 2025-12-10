@@ -23,21 +23,26 @@ import { applyProjectScope, getMonthRange } from "@/lib/supabase-helpers"
 import { DeleteInstallmentModal } from '@/components/modals/DeleteInstallmentModal'
 import { useTransactions } from '@/hooks/useTransactions'
 import { ReceiptViewerModal } from '@/components/transactions/ReceiptViewerModal'
+import { ConfirmModal } from "@/components/ConfirmModal"
+import { useToast } from "@/hooks/use-toast"
+import { useDate } from "@/contexts/date-hooks"
 
 import { useProject } from "@/contexts/project-hooks"
 
 export function Transactions() {
     const { user } = useAuth()
     const { selectedProject } = useProject()
+    const { toast } = useToast()
     const [transactions, setTransactions] = useState<Transaction[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
-    const [currentDate, setCurrentDate] = useState(new Date())
+    const { currentDate, setCurrentDate } = useDate()
 
     // Edit state
     const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isDeleteInstallmentOpen, setIsDeleteInstallmentOpen] = useState(false)
+    const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false)
     const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null)
     const { deleteTransaction, deleteFutureInstallments } = useTransactions()
     const [viewingReceiptPath, setViewingReceiptPath] = useState<string | null>(null)
@@ -64,14 +69,6 @@ export function Transactions() {
 
             if (error) throw error
 
-            // Supabase returns nested data, we need to cast or ensure type safety.
-            // The interface above expects 'categories' as an object or null.
-            // If the join returns an array (one-to-many), we might need to handle it, 
-            // but here it's many-to-one (transaction -> category), so it should be a single object if using .single() or just object if relation is correct.
-            // Actually, Supabase JS client returns an object for single relation if configured, or array.
-            // Let's verify at runtime or assume object based on typical setup. 
-            // Usually it returns an object if it's a foreign key relation.
-
             setTransactions(data || [])
         } catch (err: unknown) {
             console.error("Error fetching transactions:", err)
@@ -86,30 +83,40 @@ export function Transactions() {
     }, [fetchTransactions])
 
     const handleDelete = async (transaction: Transaction) => {
+        setTransactionToDelete(transaction)
+        
         if (!transaction.recurrence_id) {
-            if (!confirm("Tem certeza que deseja excluir esta transação?")) return
-            try {
-                await deleteTransaction(transaction.id)
-                fetchTransactions()
-            } catch (err: unknown) {
-                console.error("Error deleting transaction:", err)
-                alert("Erro ao excluir transação.")
-            }
+            setIsConfirmDeleteOpen(true)
             return
         }
 
-        setTransactionToDelete(transaction)
         setIsDeleteInstallmentOpen(true)
+    }
+
+    const handleConfirmDelete = async () => {
+        if (!transactionToDelete) return
+
+        try {
+            await deleteTransaction(transactionToDelete.id)
+            toast({ title: "Sucesso", description: "Transação excluída com sucesso." })
+            fetchTransactions()
+        } catch (err: unknown) {
+            console.error("Error deleting transaction:", err)
+            toast({ title: "Erro", description: "Erro ao excluir transação.", variant: "destructive" })
+        } finally {
+            setTransactionToDelete(null)
+        }
     }
 
     const handleDeleteSingle = async () => {
         if (!transactionToDelete) return
         try {
             await deleteTransaction(transactionToDelete.id)
+            toast({ title: "Sucesso", description: "Parcela excluída com sucesso." })
             fetchTransactions()
         } catch (err) {
             console.error('Erro ao excluir parcela única:', err)
-            alert('Erro ao excluir transação.')
+            toast({ title: "Erro", description: "Erro ao excluir transação.", variant: "destructive" })
         } finally {
             setTransactionToDelete(null)
         }
@@ -121,10 +128,11 @@ export function Transactions() {
         const startInstallment = Number(transactionToDelete.installment_number || 1)
         try {
             await deleteFutureInstallments(recurrenceId, startInstallment)
+            toast({ title: "Sucesso", description: "Parcelas futuras excluídas com sucesso." })
             fetchTransactions()
         } catch (err) {
             console.error('Erro ao excluir parcelas futuras:', err)
-            alert('Erro ao excluir parcelas futuras.')
+            toast({ title: "Erro", description: "Erro ao excluir parcelas futuras.", variant: "destructive" })
         } finally {
             setTransactionToDelete(null)
         }
@@ -154,18 +162,6 @@ export function Transactions() {
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString("pt-BR")
-    }
-
-    const getCategoryColor = (color: string) => {
-        switch (color) {
-            case "red": return "bg-rose-500/10 text-rose-500 border-rose-500/20"
-            case "orange": return "bg-orange-500/10 text-orange-500 border-orange-500/20"
-            case "yellow": return "bg-yellow-500/10 text-yellow-500 border-yellow-500/20"
-            case "green": return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-            case "blue": return "bg-indigo-500/10 text-indigo-500 border-indigo-500/20"
-            case "purple": return "bg-violet-500/10 text-violet-500 border-violet-500/20"
-            default: return "bg-zinc-500/10 text-zinc-500 border-zinc-500/20"
-        }
     }
 
     return (
@@ -247,7 +243,14 @@ export function Transactions() {
                                     </TableCell>
                                     <TableCell>
                                         {transaction.categories ? (
-                                            <Badge className={`${getCategoryColor(transaction.categories.cor)} border shadow-none hover:bg-opacity-80`}>
+                                            <Badge 
+                                                className="border shadow-none hover:bg-opacity-80"
+                                                style={{
+                                                    backgroundColor: transaction.categories.cor ? `${transaction.categories.cor}20` : undefined,
+                                                    color: transaction.categories.cor || undefined,
+                                                    borderColor: transaction.categories.cor ? `${transaction.categories.cor}40` : undefined,
+                                                }}
+                                            >
                                                 {transaction.categories.nome}
                                             </Badge>
                                         ) : (
@@ -300,75 +303,60 @@ export function Transactions() {
                     </div>
                 ) : (
                     transactions.map((transaction) => (
-                        <div
-                            key={transaction.id}
-                            className="flex items-center justify-between p-4 bg-card rounded-xl border border-border/50 shadow-sm active:bg-muted/30 transition-colors"
-                            onClick={() => handleEdit(transaction)}
-                        >
-                            <div className="flex items-center gap-4">
-                                {/* Category Icon/Initial */}
-                                <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${transaction.categories ? getCategoryColor(transaction.categories.cor) : "bg-muted text-muted-foreground"}`}>
-                                    {transaction.categories ? (
-                                        <span className="text-sm font-bold">{transaction.categories.nome.charAt(0).toUpperCase()}</span>
-                                    ) : (
-                                        <span className="text-sm font-bold">-</span>
-                                    )}
-                                </div>
-
-                                {/* Description & Meta */}
-                                <div className="flex flex-col gap-1">
-                                    <span className="font-medium text-sm line-clamp-1">{transaction.descricao}</span>
-                                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                        <span>{transaction.categories?.nome || "Sem categoria"}</span>
-                                        <span>•</span>
-                                        <span>{formatDate(transaction.data)}</span>
-                                        {typeof transaction.installment_number === 'number' && typeof transaction.total_installments === 'number' && (
-                                            <>
-                                                <span>•</span>
-                                                <span>{transaction.installment_number}/{transaction.total_installments}</span>
-                                            </>
+                        <div key={transaction.id} className="p-4 rounded-xl border border-border/50 bg-card shadow-sm space-y-3">
+                            <div className="flex items-start justify-between">
+                                <div className="space-y-1">
+                                    <div className="flex items-center gap-2">
+                                        <p className="font-medium text-foreground">{transaction.descricao}</p>
+                                        {transaction.attachment_path && (
+                                            <Paperclip className="h-3 w-3 text-muted-foreground" />
                                         )}
                                     </div>
+                                    <p className="text-xs text-muted-foreground">{formatDate(transaction.data)}</p>
+                                </div>
+                                <div className="text-right">
+                                    <p className={`font-bold ${transaction.tipo === "receita" ? "text-emerald-500" : "text-rose-500"}`}>
+                                        {formatCurrency(transaction.valor)}
+                                    </p>
+                                    {typeof transaction.installment_number === 'number' && (
+                                        <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full mt-1 inline-block">
+                                            {transaction.installment_number}/{transaction.total_installments}
+                                        </span>
+                                    )}
                                 </div>
                             </div>
-
-                            {/* Value, Actions & Attachment */}
-                            <div className="flex flex-col items-end gap-2">
-                                <span className={`text-sm font-bold ${transaction.tipo === "receita" ? "text-emerald-500" : "text-rose-500"}`}>
-                                    {formatCurrency(transaction.valor)}
-                                </span>
-                                
-                                <div className="flex items-center gap-1">
-                                    {transaction.attachment_path && (
-                                        <button
-                                            onClick={(e) => handleOpenReceipt(e, transaction.attachment_path as string)}
-                                            className="text-muted-foreground hover:text-primary transition-colors p-1"
-                                            title="Ver comprovante"
+                            <div className="flex items-center justify-between pt-2 border-t border-border/40">
+                                <div>
+                                    {transaction.categories ? (
+                                        <Badge 
+                                            variant="outline" 
+                                            className="text-xs font-normal"
+                                            style={{
+                                                backgroundColor: transaction.categories.cor ? `${transaction.categories.cor}20` : undefined,
+                                                color: transaction.categories.cor || undefined,
+                                                borderColor: transaction.categories.cor ? `${transaction.categories.cor}40` : undefined,
+                                            }}
                                         >
-                                            <Paperclip className="h-4 w-4" />
-                                        </button>
+                                            {transaction.categories.nome}
+                                        </Badge>
+                                    ) : (
+                                        <span className="text-xs text-muted-foreground">-</span>
                                     )}
-                                    
+                                </div>
+                                <div className="flex items-center gap-1">
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-7 w-7 text-muted-foreground hover:text-primary"
-                                        onClick={(e) => {
-                                            e.stopPropagation()
-                                            handleEdit(transaction)
-                                        }}
+                                        className="h-8 w-8 text-muted-foreground"
+                                        onClick={() => handleEdit(transaction)}
                                     >
                                         <Pencil className="h-4 w-4" />
                                     </Button>
-
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-500/10"
-                                        onClick={(e) => {
-                                            e.stopPropagation()
-                                            handleDelete(transaction)
-                                        }}
+                                        className="h-8 w-8 text-muted-foreground hover:text-rose-500"
+                                        onClick={() => handleDelete(transaction)}
                                     >
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
@@ -379,25 +367,33 @@ export function Transactions() {
                 )}
             </div>
 
-            <ReceiptViewerModal
-                isOpen={!!viewingReceiptPath}
-                path={viewingReceiptPath}
-                onClose={() => setViewingReceiptPath(null)}
-            />
-
             <DeleteInstallmentModal
                 isOpen={isDeleteInstallmentOpen}
                 onClose={() => setIsDeleteInstallmentOpen(false)}
                 onDeleteSingle={handleDeleteSingle}
                 onDeleteFuture={handleDeleteFuture}
-                installmentNumber={transactionToDelete?.installment_number ?? null}
-                totalInstallments={transactionToDelete?.total_installments ?? null}
             />
 
             <ExportReportModal
                 isOpen={isExportModalOpen}
-                onClose={() => setIsExportModalOpen(false)}
+                onOpenChange={setIsExportModalOpen}
             />
+
+            <ConfirmModal
+                isOpen={isConfirmDeleteOpen}
+                onOpenChange={setIsConfirmDeleteOpen}
+                onConfirm={handleConfirmDelete}
+                title="Excluir Transação"
+                description="Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita."
+            />
+
+            {viewingReceiptPath && (
+                <ReceiptViewerModal
+                    isOpen={!!viewingReceiptPath}
+                    onClose={() => setViewingReceiptPath(null)}
+                    path={viewingReceiptPath}
+                />
+            )}
         </div>
     )
 }
