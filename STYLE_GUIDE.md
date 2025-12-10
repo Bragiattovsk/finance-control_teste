@@ -1,69 +1,50 @@
-# Finance Control - Style Guide
+# Style Guide: Clean Financial UI
 
-Este documento define os padrões de interface e experiência do usuário (UI/UX) para o projeto Finance Control. O objetivo é manter a consistência visual e comportamental em todas as páginas do sistema.
+Este projeto utiliza uma abordagem **Híbrida (Light & Dark)** com foco em legibilidade e profissionalismo, adotando o sistema visual 'Clean Financial'.
 
-## Layout e Estrutura
+## 1. Paleta de Cores (Zinc Base)
 
-### Containers Principais
-- **Estilo**: `rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden`
-- **Uso**: Envolver tabelas principais e seções de conteúdo destacado.
+| Elemento | Light Mode (Class) | Dark Mode (Class) | Descrição |
+| :--- | :--- | :--- | :--- |
+| **Page Background** | `bg-zinc-50` | `bg-zinc-950` | Base da aplicação. |
+| **Card/Surface** | `bg-white` | `bg-zinc-900` | Elementos flutuantes. |
+| **Borders** | `border-zinc-200` | `border-zinc-800` | Separação sutil. |
+| **Sidebar** | `bg-white` | `bg-zinc-950` | Navegação lateral. |
 
-### Cabeçalhos de Página
-- **Título**: `text-3xl font-bold tracking-tight text-foreground`
-- **Layout**: Flexbox responsivo (`flex-col` no mobile, `flex-row` no desktop) com `gap-4`.
-- **Botões de Ação**: Alinhados à direita no desktop, largura total no mobile se necessário.
+## 2. Tipografia & Contraste
 
-## Componentes
+O contraste deve ser ajustado para garantir leitura confortável sem "estourar" a vista.
+
+| Elemento | Light Mode | Dark Mode |
+| :--- | :--- | :--- |
+| **Títulos (H1-H3)** | `text-zinc-900` | `text-zinc-50` |
+| **Body Text** | `text-zinc-600` | `text-zinc-400` |
+| **Muted/Subtitles** | `text-zinc-500` | `text-zinc-500` |
+| **Icons (Default)** | `text-zinc-500` | `text-zinc-400` |
+
+## 3. Cores Semânticas (Data Viz)
+
+Cores vibrantes devem ser mais escuras no modo claro para manter o contraste WCAG, e mais claras no modo escuro para "brilhar".
+
+| Contexto | Light Mode (`-600`) | Dark Mode (`-400` / `-500`) |
+| :--- | :--- | :--- |
+| **Primary (Brand)** | `text-violet-600` | `text-violet-400` |
+| **Success (Alta)** | `text-emerald-600` | `text-emerald-400` |
+| **Danger (Baixa)** | `text-red-600` | `text-red-400` |
+| **Warning** | `text-amber-600` | `text-amber-400` |
+| **Info** | `text-blue-600` | `text-blue-400` |
+
+## 4. Componentes
+
+### Cards
+- **Light:** Fundo branco, borda fina (`border-zinc-200`), sombra suave (`shadow-sm`).
+- **Dark:** Fundo cinza escuro (`bg-zinc-900`), borda escura (`border-zinc-800`), sem sombra.
+
+### Gráficos (Recharts)
+- **Grid Lines:** `stroke-zinc-200` (Light) / `stroke-zinc-800` (Dark).
+- **Tooltips:** Devem seguir o padrão dos Cards (Fundo branco/preto com borda).
 
 ### Tabelas
-- **Header**:
-  - Background: `bg-muted/50`
-  - Texto: `text-muted-foreground font-semibold`
-  - Borda: `border-border/50`
-- **Linhas (Rows)**:
-  - Hover: `hover:bg-muted/30`
-  - Transição: `transition-colors`
-  - Borda: `border-border/40`
-- **Células Vazias**: Mensagem centralizada com `text-muted-foreground` e altura mínima (`h-24`).
-
-### Badges (Indicadores de Status)
-Utilizar variantes com fundo transparente e cores semânticas.
-
-- **Positivo (Receita, Ativo, Lucro)**:
-  - Classes: `bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border-none`
-  - Ícones: `TrendingUp`, `CheckCircle2`
-
-- **Negativo (Despesa, Inativo, Prejuízo)**:
-  - Classes: `bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 border-none`
-  - Ícones: `TrendingDown`, `XCircle`
-
-- **Neutro / Informativo (Investimento, Categoria)**:
-  - Classes: `bg-primary/10 text-primary hover:bg-primary/20 border-none` (ou variantes de cinza/muted para secundários)
-
-### Botões de Ação (Ícones)
-- **Excluir**:
-  - Variante: `ghost`
-  - Classes: `text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10`
-
-### Barra de Pesquisa
-- **Container**: `relative w-full sm:w-64`
-- **Input**: `pl-8` (para acomodar ícone)
-- **Ícone**: Absolute position `left-2 top-2.5`, cor `text-muted-foreground`.
-
-### Paginação
-- **Container**: `flex items-center justify-end space-x-2 py-4`
-- **Botões**: `variant="outline" size="sm"`
-- **Texto**: `text-sm text-muted-foreground`
-
-## Responsividade
-
-- **Mobile First**: Desenvolver layouts pensando primeiro em telas pequenas.
-- **Breakpoints**: Utilizar `sm:` (640px) como principal ponto de quebra para transição de layouts empilhados para horizontais.
-- **Tabelas no Mobile**: Garantir overflow horizontal ou cards adaptativos se necessário (atualmente utilizando overflow padrão da tabela).
-
-## Acessibilidade e Usabilidade
-
-- **Feedback Visual**: Sempre fornecer feedback de hover e focus em elementos interativos.
-- **Loading States**: Utilizar spinners centralizados (`animate-spin`) durante carregamento de dados.
-- **Empty States**: Sempre mostrar mensagens claras quando não houver dados a exibir.
-- **Confirmação**: Exigir confirmação (`confirm()` ou Modal) para ações destrutivas.
+- **Header:** `bg-zinc-50/50` (Light) vs `dark:bg-zinc-900/50`.
+- **Linhas (Hover):** `hover:bg-zinc-50` (Light) vs `dark:hover:bg-zinc-800/50`.
+- **Bordas:** `border-zinc-200` (Light) vs `dark:border-zinc-800`.

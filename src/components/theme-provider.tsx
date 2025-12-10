@@ -21,15 +21,29 @@ export function ThemeProvider({
 
     useEffect(() => {
         const root = window.document.documentElement
+        const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
 
+        // Mobile Logic (< 768px): Force System Sync
+        if (window.innerWidth < 768) {
+            root.classList.remove("light", "dark")
+            root.classList.add(mediaQuery.matches ? "dark" : "light")
+
+            const listener = (e: MediaQueryListEvent) => {
+                if (window.innerWidth < 768) {
+                    root.classList.remove("light", "dark")
+                    root.classList.add(e.matches ? "dark" : "light")
+                }
+            }
+
+            mediaQuery.addEventListener("change", listener)
+            return () => mediaQuery.removeEventListener("change", listener)
+        }
+
+        // Desktop Logic (>= 768px): Respect localStorage/Toggle
         root.classList.remove("light", "dark")
 
         if (theme === "system") {
-            const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-                .matches
-                ? "dark"
-                : "light"
-
+            const systemTheme = mediaQuery.matches ? "dark" : "light"
             root.classList.add(systemTheme)
             return
         }

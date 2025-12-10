@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react"
+import { format } from "date-fns"
 import { supabase } from "@/lib/supabase"
 import { useAuth } from "@/contexts/auth-hooks"
 import { useProject } from "@/contexts/project-hooks"
@@ -25,6 +26,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle, PlusCircle, Plus } from "lucide-react"
 import { NewCategoryModal } from "@/components/NewCategoryModal"
 import { AttachmentInput } from "@/components/AttachmentInput"
+import { DatePicker } from "@/components/ui/date-picker"
 
 import { Transaction, Category } from "@/types"
 import { Switch } from "@/components/ui/switch"
@@ -70,7 +72,7 @@ export function NewTransactionModal({
     const [amount, setAmount] = useState("")
     const [type, setType] = useState<"receita" | "despesa">("despesa")
     const [categoryId, setCategoryId] = useState("")
-    const [date, setDate] = useState(new Date().toISOString().split("T")[0])
+    const [date, setDate] = useState<Date | undefined>(new Date())
     const [isPaid, setIsPaid] = useState(true)
     const [isInstallment, setIsInstallment] = useState(false)
     const [installments, setInstallments] = useState<string>("2")
@@ -129,7 +131,7 @@ export function NewTransactionModal({
         setAmount("")
         setType(isInvestmentMode ? "despesa" : "despesa")
         setCategoryId("")
-        setDate(new Date().toISOString().split("T")[0])
+        setDate(new Date())
         setIsPaid(true)
         setAttachmentPath(null)
     }, [isInvestmentMode])
@@ -142,7 +144,15 @@ export function NewTransactionModal({
                 setAmount(transactionToEdit.valor.toString())
                 setType(transactionToEdit.tipo)
                 setCategoryId(transactionToEdit.categoria_id || "")
-                setDate(transactionToEdit.data)
+                
+                // Parse date string to Date object correctly (YYYY-MM-DD)
+                if (transactionToEdit.data) {
+                    const [year, month, day] = transactionToEdit.data.split('-').map(Number);
+                    setDate(new Date(year, month - 1, day));
+                } else {
+                    setDate(new Date());
+                }
+
                 setIsPaid(transactionToEdit.pago)
                 setAttachmentPath(transactionToEdit.attachment_path || null)
             } else {
@@ -168,13 +178,15 @@ export function NewTransactionModal({
                 throw new Error("Preencha todos os campos obrigatórios.")
             }
 
+            const formattedDate = format(date, "yyyy-MM-dd")
+
             const payload = {
                 user_id: user.id,
                 descricao: description,
                 valor: parseFloat(amount),
                 tipo: type,
                 categoria_id: categoryId || null,
-                data: date,
+                data: formattedDate,
                 pago: isPaid,
                 project_id: selectedProject?.id ?? null,
                 attachment_path: attachmentPath
@@ -194,7 +206,7 @@ export function NewTransactionModal({
                             description,
                             amount: parseFloat(amount),
                             type,
-                            date,
+                            date: formattedDate,
                             categoryId: categoryId || null,
                             paid: isPaid,
                             projectId: selectedProject?.id ?? null,
@@ -396,13 +408,7 @@ export function NewTransactionModal({
 
                     <div className="grid gap-2">
                         <Label htmlFor="date">Data</Label>
-                        <Input
-                            id="date"
-                            type="date"
-                            value={date}
-                            onChange={(e) => setDate(e.target.value)}
-                            required
-                        />
+                        <DatePicker date={date} setDate={setDate} />
                     </div>
 
                     <div className="grid gap-2">

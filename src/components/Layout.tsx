@@ -40,7 +40,7 @@ export function Layout() {
     return (
         <div className="flex min-h-screen w-full bg-background">
             {/* Sidebar */}
-            <aside className="hidden w-64 flex-col border-r border-border/50 bg-zinc-900/50 px-4 py-6 md:flex backdrop-blur-xl">
+            <aside className="hidden w-64 flex-col border-r bg-white border-zinc-200 dark:bg-zinc-950 dark:border-zinc-800 px-4 py-6 md:flex">
                 <div className="mb-6 flex items-center px-2 gap-[15px]">
                     <img 
                         src="/favicon.svg" 
@@ -78,10 +78,12 @@ export function Layout() {
                         return (
                             <Link key={item.href} to={item.href}>
                                 <Button
-                                    variant={isActive ? "secondary" : "ghost"}
+                                    variant="ghost"
                                     className={cn(
                                         "w-full justify-start gap-2 transition-all duration-200 rounded-lg", 
-                                        isActive && "bg-primary/10 text-primary hover:bg-primary/15"
+                                        isActive 
+                                            ? "bg-primary/10 text-primary hover:bg-primary/15" 
+                                            : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-50 dark:hover:bg-zinc-800"
                                     )}
                                 >
                                     <Icon className="h-4 w-4" />
@@ -99,7 +101,7 @@ export function Layout() {
                         <LogOut className="h-4 w-4" />
                         Sair
                     </Button>
-                    <ModeToggle />
+                    <ModeToggle className="hidden md:flex" />
                 </div>
             </aside >
 

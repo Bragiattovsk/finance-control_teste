@@ -47,6 +47,8 @@ const INVESTMENT_TYPES = [
   "Outros",
 ]
 
+import { ConfirmModal } from "@/components/ConfirmModal"
+
 export function InvestmentsList({ onChanged }: InvestmentsListProps) {
   const { user } = useAuth()
   const { selectedProject } = useProject()
@@ -58,6 +60,7 @@ export function InvestmentsList({ onChanged }: InvestmentsListProps) {
   const [editing, setEditing] = useState<InvestmentItem | null>(null)
   const [saving, setSaving] = useState(false)
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false)
+  const [itemToDelete, setItemToDelete] = useState<InvestmentItem | null>(null)
 
   const fetchItems = useCallback(async () => {
     if (!user) return
@@ -103,12 +106,15 @@ export function InvestmentsList({ onChanged }: InvestmentsListProps) {
     fetchCategories()
   }, [fetchItems, fetchCategories])
 
-  const handleDelete = async (inv: InvestmentItem) => {
-    if (!user) return
-    if (!window.confirm("Tem certeza que deseja excluir este investimento?")) return
+  const handleDeleteClick = (inv: InvestmentItem) => {
+    setItemToDelete(inv)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!user || !itemToDelete) return
 
     try {
-      const { error } = await supabase.rpc("delete_investment_linked", { p_investment_id: inv.id })
+      const { error } = await supabase.rpc("delete_investment_linked", { p_investment_id: itemToDelete.id })
       if (error) throw error
       toast({ title: "Removido", description: "Investimento excluído com sucesso", variant: "default" })
       await fetchItems()
@@ -116,6 +122,8 @@ export function InvestmentsList({ onChanged }: InvestmentsListProps) {
     } catch (err) {
       console.error("Error deleting investment:", err)
       toast({ title: "Erro", description: "Não foi possível excluir", variant: "destructive" })
+    } finally {
+      setItemToDelete(null)
     }
   }
 
@@ -271,7 +279,7 @@ export function InvestmentsList({ onChanged }: InvestmentsListProps) {
                         variant="ghost" 
                         size="icon" 
                         className="h-8 w-8 text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10"
-                        onClick={() => handleDelete(inv)}
+                        onClick={() => handleDeleteClick(inv)}
                         title="Excluir"
                       >
                           <Trash2 className="h-4 w-4" />
@@ -283,6 +291,14 @@ export function InvestmentsList({ onChanged }: InvestmentsListProps) {
             </TableBody>
           </Table>
       </div>
+
+      <ConfirmModal
+        isOpen={!!itemToDelete}
+        onOpenChange={(open) => !open && setItemToDelete(null)}
+        onConfirm={handleConfirmDelete}
+        title="Excluir Investimento"
+        description={`Tem certeza que deseja excluir o investimento "${itemToDelete?.name}"? Esta ação não pode ser desfeita.`}
+      />
 
       <Dialog open={!!editing} onOpenChange={(open) => !open && setEditing(null)}>
         <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden gap-0">

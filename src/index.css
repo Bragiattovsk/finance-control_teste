@@ -5,10 +5,10 @@
 @layer base {
   :root {
     /* Modo Claro - Clean e Nítido */
-    --background: 0 0% 100%; /* Branco */
-    --foreground: 240 10% 3.9%; /* Quase Preto */
+    --background: 0 0% 98%; /* Zinc 50 */
+    --foreground: 240 5.9% 10%; /* Zinc 900 */
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 240 5.9% 10%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
 
@@ -72,7 +72,7 @@
     @apply border-border;
   }
   body {
-    @apply min-h-screen bg-background text-foreground dark:bg-[#000000] dark:md:bg-zinc-950 font-sans antialiased;
+    @apply min-h-screen bg-background text-foreground font-sans antialiased;
     /* Adiciona suavidade na transição de cores */
     transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
   }

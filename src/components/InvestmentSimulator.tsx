@@ -12,8 +12,7 @@ import { formatCurrency } from "@/lib/format"
 import { 
   Lock, 
   Loader2, 
-  Info, 
-  AlertTriangle, 
+  Info,
   Gem, 
   PiggyBank, 
   TrendingUp, 
@@ -30,7 +29,6 @@ import {
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
   Legend,
-  Line,
 } from "recharts"
 
 export function InvestmentSimulator() {
@@ -90,7 +88,7 @@ export function InvestmentSimulator() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in duration-500">
         {/* Sidebar - Parameters */}
         <div className="lg:col-span-1 space-y-6">
-          <Card className="bg-zinc-900 border-white/10 shadow-sm h-full">
+          <Card className="bg-card border-border shadow-sm h-full">
             <CardHeader className="pb-4">
               <CardTitle className="text-xl flex items-center gap-2">
                 Simulador
@@ -328,7 +326,7 @@ export function InvestmentSimulator() {
         <div className="lg:col-span-2 space-y-6">
           {/* KPI Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Card className="bg-zinc-900 border-white/10">
+            <Card className="bg-card border-border">
               <CardHeader className="p-4 pb-2 space-y-0">
                 <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                   <PiggyBank className="w-3 h-3" /> Total Investido
@@ -340,7 +338,7 @@ export function InvestmentSimulator() {
               </CardContent>
             </Card>
 
-            <Card className="bg-emerald-500/5 border-white/10">
+            <Card className="bg-emerald-500/5 border-border">
               <CardHeader className="p-4 pb-2 space-y-0">
                 <CardTitle className="text-xs font-medium text-emerald-600/80 uppercase tracking-wider flex items-center gap-2">
                   <TrendingUp className="w-3 h-3" /> Rendimento Líquido
@@ -365,7 +363,7 @@ export function InvestmentSimulator() {
               </CardContent>
             </Card>
 
-            <Card className="bg-primary/5 border-white/10 shadow-sm relative overflow-hidden">
+            <Card className="bg-primary/5 border-border shadow-sm relative overflow-hidden">
               <div className="absolute right-0 top-0 w-16 h-16 bg-primary/10 rounded-bl-full -mr-8 -mt-8" />
               <CardHeader className="p-4 pb-2 space-y-0 relative">
                 <CardTitle className="text-xs font-medium text-primary/80 uppercase tracking-wider flex items-center gap-2">
@@ -380,7 +378,7 @@ export function InvestmentSimulator() {
           </div>
 
           {/* Chart */}
-          <Card className="bg-zinc-900 border-white/10 shadow-sm">
+          <Card className="bg-card border-border shadow-sm">
             <CardHeader>
               <CardTitle className="text-base font-medium">Evolução Patrimonial</CardTitle>
             </CardHeader>
@@ -427,73 +425,45 @@ export function InvestmentSimulator() {
                         backgroundColor: 'hsl(var(--card))',
                         borderColor: 'hsl(var(--border))',
                         color: 'hsl(var(--foreground))',
-                        borderRadius: 'var(--radius)',
-                        boxShadow: 'var(--shadow-sm)'
+                        borderRadius: '8px',
+                        boxShadow: 'var(--shadow-md)',
+                        fontSize: '12px'
                       }}
-                    />
-                    <Legend 
-                      verticalAlign="top" 
-                      height={36} 
-                      iconType="circle"
-                      wrapperStyle={{ fontSize: '12px', color: 'hsl(var(--muted-foreground))' }}
+                      itemStyle={{ color: 'inherit' }}
                     />
                     <Area
                       type="monotone"
                       dataKey="invested"
                       name="Valor Investido"
-                      stackId="1"
                       stroke="#6366F1"
-                      strokeWidth={2}
+                      fillOpacity={1}
                       fill="url(#colorInvested)"
                     />
                     <Area
                       type="monotone"
                       dataKey="interest"
-                      name="Juros Acumulados"
-                      stackId="1"
+                      name="Rendimento"
                       stroke="#10B981"
-                      strokeWidth={2}
+                      fillOpacity={1}
                       fill="url(#colorInterest)"
+                      stackId="1"
                     />
-                    <Line
-                      type="monotone"
-                      dataKey="total"
-                      name="Total Acumulado"
-                      stroke="hsl(var(--primary))"
-                      strokeWidth={2}
-                      dot={false}
-                    />
+                    <Legend />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Disclaimers */}
-          <div className="space-y-2">
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400">
-              <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
-              <p className="text-xs leading-relaxed">
-                <strong>Atenção:</strong> Esta simulação é uma estimativa baseada nos parâmetros informados. 
-                A rentabilidade real pode variar de acordo com as condições de mercado, taxas administrativas e impostos específicos de cada investimento.
-                O rendimento passado não garante rentabilidade futura.
-              </p>
-            </div>
-            
-            {years < 2 && (
-              <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-400">
+              
+              <div className="mt-4 flex items-start gap-2 text-xs text-muted-foreground bg-muted/30 p-3 rounded-lg border border-border/50">
                 <Info className="w-4 h-4 mt-0.5 shrink-0" />
-                <p className="text-xs leading-relaxed">
-                  Investimentos de curto prazo (menos de 2 anos) geralmente sofrem maior incidência de Imposto de Renda (até 22,5%).
-                  Para prazos menores que 30 dias, também há cobrança de IOF.
+                <p>
+                  Aviso: Os valores apresentados são apenas uma simulação baseada nos parâmetros inseridos e estão sujeitos a alterações em cenários reais de mercado. Não representam garantia de rentabilidade.
                 </p>
               </div>
-            )}
-          </div>
+            </CardContent>
+          </Card>
         </div>
-
-        <UpgradeModal open={upgradeOpen} onOpenChange={setUpgradeOpen} />
       </div>
+      <UpgradeModal open={upgradeOpen} onOpenChange={setUpgradeOpen} />
     </TooltipProvider>
   )
 }

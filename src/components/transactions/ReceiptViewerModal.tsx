@@ -59,7 +59,7 @@ export function ReceiptViewerModal({ isOpen, onClose, path }: ReceiptViewerModal
                                         Este documento é um PDF. Para melhor visualização, abra em uma nova aba ou faça o download.
                                     </p>
                                 </div>
-                                <Button variant="outline" onClick={() => window.open(url, "_blank")}>
+                                <Button variant="outline" onClick={() => window.open(url, "_blank", "noopener,noreferrer")}>
                                     <ExternalLink className="mr-2 h-4 w-4" />
                                     Abrir PDF
                                 </Button>
@@ -87,7 +87,7 @@ export function ReceiptViewerModal({ isOpen, onClose, path }: ReceiptViewerModal
                             <>
                                 <Button
                                     variant="outline"
-                                    onClick={() => window.open(url, "_blank")}
+                                    onClick={() => window.open(url, "_blank", "noopener,noreferrer")}
                                     title="Abrir em nova aba"
                                 >
                                     <ExternalLink className="h-4 w-4 sm:mr-2" />

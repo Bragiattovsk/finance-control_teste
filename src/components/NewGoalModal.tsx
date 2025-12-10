@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react"
+import { format } from "date-fns"
 import { supabase } from "@/lib/supabase"
 import { useAuth } from "@/contexts/auth-hooks"
 import { useProject } from "@/contexts/project-hooks"
@@ -15,8 +16,9 @@ import {
 } from "@/components/ui/dialog"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle, Loader2, Target, Calendar, Wallet, Plus } from "lucide-react"
+import { AlertCircle, Loader2, Target, Wallet, Plus } from "lucide-react"
 import { NewCategoryModal } from "./NewCategoryModal"
+import { DatePicker } from "@/components/ui/date-picker"
 
 interface Category {
     id: string
@@ -49,7 +51,7 @@ export function NewGoalModal({ isOpen, onClose, onSuccess, goalToEdit }: NewGoal
 
     const [title, setTitle] = useState("")
     const [targetAmount, setTargetAmount] = useState("")
-    const [deadline, setDeadline] = useState("")
+    const [deadline, setDeadline] = useState<Date | undefined>(undefined)
     const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([])
 
     const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false)
@@ -74,7 +76,7 @@ export function NewGoalModal({ isOpen, onClose, onSuccess, goalToEdit }: NewGoal
     const resetForm = useCallback(() => {
         setTitle("")
         setTargetAmount("")
-        setDeadline("")
+        setDeadline(undefined)
         setSelectedCategoryIds([])
         setError(null)
     }, [])
@@ -85,7 +87,14 @@ export function NewGoalModal({ isOpen, onClose, onSuccess, goalToEdit }: NewGoal
             if (goalToEdit) {
                 setTitle(goalToEdit.title)
                 setTargetAmount(goalToEdit.target_amount.toString())
-                setDeadline(goalToEdit.deadline)
+                
+                // Parse date string to Date object correctly (YYYY-MM-DD)
+                if (goalToEdit.deadline) {
+                    const [year, month, day] = goalToEdit.deadline.split('-').map(Number);
+                    setDeadline(new Date(year, month - 1, day));
+                } else {
+                    setDeadline(undefined);
+                }
 
                 const initialCategories = (goalToEdit && Array.isArray(goalToEdit.categories))
                     ? goalToEdit.categories
@@ -105,7 +114,13 @@ export function NewGoalModal({ isOpen, onClose, onSuccess, goalToEdit }: NewGoal
         setError(null)
 
         try {
+            if (!title || !targetAmount || !deadline) {
+                throw new Error("Preencha todos os campos obrigatórios.")
+            }
+
+            const formattedDeadline = format(deadline, "yyyy-MM-dd")
             const targetAmountFloat = parseFloat(targetAmount)
+            
             if (isNaN(targetAmountFloat) || targetAmountFloat <= 0) {
                 throw new Error("Valor da meta inválido.")
             }
@@ -113,7 +128,7 @@ export function NewGoalModal({ isOpen, onClose, onSuccess, goalToEdit }: NewGoal
             const { error: rpcError } = await supabase.rpc('create_investment_goal', {
                 p_title: title,
                 p_target_amount: targetAmountFloat,
-                p_deadline: deadline,
+                p_deadline: formattedDeadline,
                 p_project_id: selectedProject?.id || null,
                 p_category_ids: selectedCategoryIds,
                 p_goal_id: goalToEdit?.id || null
@@ -194,22 +209,12 @@ export function NewGoalModal({ isOpen, onClose, onSuccess, goalToEdit }: NewGoal
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="deadline" className="text-xs font-medium text-muted-foreground">Data Limite</Label>
-                                    <div className="relative">
-                                        <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                                        <Input
-                                            id="deadline"
-                                            type="date"
-                                            value={deadline}
-                                            onChange={(e) => setDeadline(e.target.value)}
-                                            className="pl-9 h-10 block"
-                                            required
-                                        />
-                                    </div>
+                                    <Label htmlFor="deadline" className="text-xs font-medium text-muted-foreground">Prazo Final</Label>
+                                    <DatePicker date={deadline} setDate={setDeadline} placeholder="Selecione o prazo" />
                                 </div>
                             </div>
 
-                            <div className="space-y-3">
+                            <div className="px-6 pb-6 space-y-2">
                                 <div className="flex items-center justify-between">
                                     <Label className="text-xs font-medium text-muted-foreground">Categorias Vinculadas</Label>
                                     <Button

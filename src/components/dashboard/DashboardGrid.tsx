@@ -61,7 +61,7 @@ function SortableWidget({ widget, isEditing, isPro, onRemoveRequest, currentDate
             ref={setNodeRef}
             style={style}
             className={cn(
-                "bg-zinc-900 rounded-xl shadow-lg border border-white/20 md:border-white/10 overflow-hidden flex flex-col relative group transition-shadow hover:shadow-xl h-full",
+                "bg-card text-card-foreground rounded-xl shadow-lg border border-border overflow-hidden flex flex-col relative group transition-shadow hover:shadow-xl h-full",
                 sizeClass,
                 isEditing && "ring-2 ring-primary/20",
                 isDragging && "opacity-50 shadow-xl ring-2 ring-primary scale-[1.02]"
@@ -162,9 +162,9 @@ export function DashboardGrid({ widgets, loading, isEditing, isPro, onAddWidget,
 
     if (widgets.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[400px] border-2 border-dashed border-slate-700 rounded-lg bg-slate-900/50">
-                <LayoutDashboard className="h-12 w-12 text-slate-500 mb-4" />
-                <p className="text-slate-400 mb-4">Seu painel está vazio.</p>
+            <div className="flex flex-col items-center justify-center min-h-[400px] border-2 border-dashed border-muted rounded-lg bg-muted/10">
+                <LayoutDashboard className="h-12 w-12 text-muted-foreground mb-4" />
+                <p className="text-muted-foreground mb-4">Seu painel está vazio.</p>
                 <Button
                     onClick={onAddWidget}
                     className="bg-purple-600 text-white hover:bg-purple-700 transition"

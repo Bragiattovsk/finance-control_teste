@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react"
+import { format } from "date-fns"
 import { supabase } from "@/lib/supabase"
 import { useAuth } from "@/contexts/auth-hooks"
 import { useProject } from "@/contexts/project-hooks"
@@ -24,7 +25,8 @@ import { Switch } from "@/components/ui/switch"
 import { useToast } from "@/hooks/use-toast"
 import type { Category } from "@/types"
 import { NewCategoryModal } from "@/components/NewCategoryModal"
-import { CalendarIcon, Wallet, TrendingUp, Plus } from "lucide-react"
+import { Wallet, TrendingUp, Plus } from "lucide-react"
+import { DatePicker } from "@/components/ui/date-picker"
 
 interface InvestmentModalProps {
   isOpen: boolean
@@ -50,7 +52,7 @@ export function InvestmentModal({ isOpen, onClose, onSuccess }: InvestmentModalP
   const [name, setName] = useState("")
   const [type, setType] = useState<string>(INVESTMENT_TYPES[0])
   const [amount, setAmount] = useState("")
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0])
+  const [date, setDate] = useState<Date | undefined>(new Date())
   const [debitFromBalance, setDebitFromBalance] = useState(true)
   const [categories, setCategories] = useState<Category[]>([])
   const [investmentCategoryId, setInvestmentCategoryId] = useState<string | null>(null)
@@ -88,7 +90,7 @@ export function InvestmentModal({ isOpen, onClose, onSuccess }: InvestmentModalP
       setName("")
       setType(INVESTMENT_TYPES[0])
       setAmount("")
-      setDate(new Date().toISOString().split("T")[0])
+      setDate(new Date())
       setDebitFromBalance(true)
       ;(async () => {
         if (!user) return
@@ -155,6 +157,7 @@ export function InvestmentModal({ isOpen, onClose, onSuccess }: InvestmentModalP
     setSaving(true)
     try {
       let linkedTxId: string | null = null
+      const formattedDate = format(date, "yyyy-MM-dd")
 
       if (debitFromBalance) {
         const categoryId = investmentCategoryId
@@ -164,7 +167,7 @@ export function InvestmentModal({ isOpen, onClose, onSuccess }: InvestmentModalP
           valor: amountFloat,
           tipo: "despesa",
           categoria_id: categoryId,
-          data: date,
+          data: formattedDate,
           pago: true,
           project_id: selectedProject?.id ?? null,
         }
@@ -183,7 +186,7 @@ export function InvestmentModal({ isOpen, onClose, onSuccess }: InvestmentModalP
         name,
         type,
         amount: amountFloat,
-        date,
+        date: formattedDate,
         debit_from_balance: debitFromBalance,
         transaction_id: linkedTxId,
         category_id: investmentCategoryId ?? null,
@@ -275,17 +278,7 @@ export function InvestmentModal({ isOpen, onClose, onSuccess }: InvestmentModalP
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="date" className="text-xs font-medium text-muted-foreground">Data do Aporte</Label>
-              <div className="relative">
-                <CalendarIcon className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input 
-                  id="date" 
-                  type="date" 
-                  value={date} 
-                  onChange={(e) => setDate(e.target.value)} 
-                  className="pl-9 h-10 block"
-                  required 
-                />
-              </div>
+              <DatePicker date={date} setDate={setDate} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="category" className="text-xs font-medium text-muted-foreground">Categoria</Label>

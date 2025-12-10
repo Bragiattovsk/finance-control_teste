@@ -44,9 +44,8 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  // 👇 A MÁGICA DA OTIMIZAÇÃO COMEÇA AQUI 👇
   build: {
-    chunkSizeWarningLimit: 1600,
+    chunkSizeWarningLimit: 3000,
     rollupOptions: {
       output: {
         manualChunks(id) {

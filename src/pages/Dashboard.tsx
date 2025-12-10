@@ -92,8 +92,8 @@ export function Dashboard() {
         <div className="space-y-8 p-1">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
-                    <p className="text-muted-foreground mt-1">Visão geral das suas finanças e investimentos.</p>
+                    <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Dashboard</h1>
+                    <p className="text-zinc-500 dark:text-zinc-400 mt-1">Visão geral das suas finanças e investimentos.</p>
                 </div>
                 <div className="flex flex-col sm:flex-row items-center gap-3">
                     <MonthSelector currentDate={currentDate} onMonthChange={setCurrentDate} />
@@ -137,11 +137,11 @@ export function Dashboard() {
                         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                             <div className="flex flex-col space-y-2">
                                 <div className="flex items-center gap-2">
-                                    <CardTitle className="text-sm font-medium text-muted-foreground">Saldo em Conta</CardTitle>
+                                    <CardTitle className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Saldo em Conta</CardTitle>
                                     <TooltipProvider>
                                         <Tooltip>
                                             <TooltipTrigger>
-                                                <Info className="h-3.5 w-3.5 cursor-help text-muted-foreground/70 hover:text-foreground" />
+                                                <Info className="h-3.5 w-3.5 cursor-help text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300" />
                                             </TooltipTrigger>
                                             <TooltipContent>
                                                 <p>Soma de todas as suas receitas menos despesas desde o início</p>
@@ -156,9 +156,9 @@ export function Dashboard() {
                                     )}>
                                         <Wallet className={cn(
                                             "h-3.5 w-3.5",
-                                            walletBalance > 0 ? "text-emerald-500" :
-                                            walletBalance < 0 ? "text-red-500" :
-                                            "text-foreground"
+                                            walletBalance > 0 ? "text-emerald-600 dark:text-emerald-400" :
+                                            walletBalance < 0 ? "text-red-600 dark:text-red-400" :
+                                            "text-zinc-600 dark:text-zinc-400"
                                         )} />
                                     </div>
                                 </div>
@@ -166,15 +166,15 @@ export function Dashboard() {
                                 <div>
                                     <div className={cn(
                                         "text-4xl font-bold tracking-tight",
-                                        walletBalance > 0 ? "text-emerald-500" :
-                                        walletBalance < 0 ? "text-red-500" :
-                                        "text-foreground"
+                                        walletBalance > 0 ? "text-emerald-600 dark:text-emerald-400" :
+                                        walletBalance < 0 ? "text-red-600 dark:text-red-400" :
+                                        "text-zinc-900 dark:text-zinc-50"
                                     )}>{formatCurrency(walletBalance)}</div>
                                     <p className={cn(
                                         "text-xs font-medium mt-1",
                                         walletBalance > 0 ? "text-emerald-600/80 dark:text-emerald-400/80" :
                                         walletBalance < 0 ? "text-red-600/80 dark:text-red-400/80" :
-                                        "text-muted-foreground"
+                                        "text-zinc-500 dark:text-zinc-400"
                                     )}>
                                         Acumulado total
                                     </p>
@@ -191,13 +191,13 @@ export function Dashboard() {
                 {/* 2. Meta de Investimento (Top Right) */}
                 <Card className="rounded-xl shadow-sm hover:shadow-md transition-all duration-200 border-primary/20 bg-primary/5 md:col-span-4 h-full min-h-[140px]">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-primary/80">Meta de Investimento</CardTitle>
+                        <CardTitle className="text-sm font-medium text-violet-600 dark:text-violet-400">Meta de Investimento</CardTitle>
                         <div className="p-2 bg-primary/10 rounded-lg">
-                            <DollarSign className="h-4 w-4 text-primary" />
+                            <DollarSign className="h-4 w-4 text-violet-600 dark:text-violet-400" />
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-primary">{formatCurrency(realizedInvestment)}</div>
+                        <div className="text-2xl font-bold text-violet-600 dark:text-violet-400">{formatCurrency(realizedInvestment)}</div>
                         <div className="flex flex-col gap-1">
                             <p className="text-xs text-primary/70 mt-1 font-medium">
                                 de {formatCurrency(investment)} (Meta sugerida)

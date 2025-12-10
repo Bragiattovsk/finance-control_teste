@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Target, Calendar, TrendingUp, Edit2, Trash2 } from "lucide-react"
 import { formatCurrency } from "@/lib/format"
 import { cn } from "@/lib/utils"
+import { ConfirmModal } from "@/components/ConfirmModal"
 
 interface Category {
     id: string
@@ -30,6 +31,7 @@ interface GoalCardProps {
 export function GoalCard({ goal, onEdit, onDelete }: GoalCardProps) {
     const [currentBalance, setCurrentBalance] = useState(0)
     const [loading, setLoading] = useState(true)
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
 
     // Defensive coding: Ensure categories is always an array
     const categoriesList: Category[] = useMemo(() => Array.isArray(goal.categories) ? goal.categories : [], [goal.categories])
@@ -45,15 +47,15 @@ export function GoalCard({ goal, onEdit, onDelete }: GoalCardProps) {
                     return
                 }
 
-                // Fetch all transactions for these categories
-                const { data: transactions, error } = await supabase
-                    .from("transactions")
-                    .select("valor")
-                    .in("categoria_id", categoryIds)
+                // Fetch all investments for these categories
+                const { data: investmentsData, error } = await supabase
+                    .from("investments")
+                    .select("amount")
+                    .in("category_id", categoryIds)
 
                 if (error) throw error
 
-                const total = transactions?.reduce((acc, tx) => acc + Number(tx.valor), 0) || 0
+                const total = investmentsData?.reduce((acc, inv) => acc + Number(inv.amount), 0) || 0
                 setCurrentBalance(total)
             } catch (err) {
                 console.error("Error fetching goal balance:", err)
@@ -65,20 +67,22 @@ export function GoalCard({ goal, onEdit, onDelete }: GoalCardProps) {
         fetchBalance()
     }, [categoriesList])
 
-    const handleDelete = async () => {
-        if (window.confirm("Tem certeza que deseja excluir esta meta?")) {
-            try {
-                const { error } = await supabase
-                    .from("goals")
-                    .delete()
-                    .eq("id", goal.id)
+    const handleDeleteClick = () => {
+        setIsDeleteModalOpen(true)
+    }
 
-                if (error) throw error
-                onDelete()
-            } catch (err) {
-                console.error("Error deleting goal:", err)
-                alert("Erro ao excluir meta.")
-            }
+    const handleConfirmDelete = async () => {
+        try {
+            const { error } = await supabase
+                .from("goals")
+                .delete()
+                .eq("id", goal.id)
+
+            if (error) throw error
+            onDelete()
+        } catch (err) {
+            console.error("Error deleting goal:", err)
+            alert("Erro ao excluir meta.")
         }
     }
 
@@ -181,11 +185,19 @@ export function GoalCard({ goal, onEdit, onDelete }: GoalCardProps) {
                         <Edit2 className="h-3 w-3" />
                         Editar
                     </Button>
-                    <Button variant="outline" size="sm" className="w-10 px-0 text-destructive hover:text-destructive hover:bg-destructive/10 hover:border-destructive/50" onClick={handleDelete}>
+                    <Button variant="outline" size="sm" className="w-10 px-0 text-destructive hover:text-destructive hover:bg-destructive/10 hover:border-destructive/50" onClick={handleDeleteClick}>
                         <Trash2 className="h-4 w-4" />
                     </Button>
                 </div>
             </CardContent>
+
+            <ConfirmModal
+                isOpen={isDeleteModalOpen}
+                onOpenChange={setIsDeleteModalOpen}
+                onConfirm={handleConfirmDelete}
+                title="Excluir Meta"
+                description={`Tem certeza que deseja excluir a meta "${goal.title}"? Esta ação não pode ser desfeita.`}
+            />
         </Card>
     )
 }
