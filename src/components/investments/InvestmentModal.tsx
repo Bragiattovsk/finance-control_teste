@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { supabase } from "@/lib/supabase"
 import { useAuth } from "@/contexts/auth-hooks"
 import { useProject } from "@/contexts/project-hooks"
@@ -56,36 +56,7 @@ export function InvestmentModal({ isOpen, onClose, onSuccess }: InvestmentModalP
   const [investmentCategoryId, setInvestmentCategoryId] = useState<string | null>(null)
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false)
 
-  useEffect(() => {
-    if (isOpen) {
-      setName("")
-      setType(INVESTMENT_TYPES[0])
-      setAmount("")
-      setDate(new Date().toISOString().split("T")[0])
-      setDebitFromBalance(true)
-      ;(async () => {
-        if (!user) return
-        const { data } = await supabase
-          .from("categories")
-          .select("id, nome, cor, tipo, is_investment")
-          .eq("user_id", user.id)
-          .order("nome")
-        const cats = (data || []) as Category[]
-        setCategories(cats)
-        const defaultId = await findInvestmentCategoryId()
-        setInvestmentCategoryId(defaultId)
-      })()
-    }
-  }, [isOpen])
-
-  const resolveCategoryTipo = (c: Category): "income" | "expense" => {
-    const raw = (c as unknown as { tipo?: string }).tipo
-    if (raw === "income" || raw === "expense") return raw
-    if (raw === "receita") return "income"
-    return "expense"
-  }
-
-  const findInvestmentCategoryId = async (): Promise<string | null> => {
+  const findInvestmentCategoryId = useCallback(async (): Promise<string | null> => {
     if (!user) return null
     const { data, error } = await supabase
       .from("categories")
@@ -110,7 +81,37 @@ export function InvestmentModal({ isOpen, onClose, onSuccess }: InvestmentModalP
 
     const firstExpense = categories.find((c) => resolveCategoryTipo(c) === "expense")
     return firstExpense ? firstExpense.id : null
+  }, [user])
+
+  useEffect(() => {
+    if (isOpen) {
+      setName("")
+      setType(INVESTMENT_TYPES[0])
+      setAmount("")
+      setDate(new Date().toISOString().split("T")[0])
+      setDebitFromBalance(true)
+      ;(async () => {
+        if (!user) return
+        const { data } = await supabase
+          .from("categories")
+          .select("id, nome, cor, tipo, is_investment")
+          .eq("user_id", user.id)
+          .order("nome")
+        const cats = (data || []) as Category[]
+        setCategories(cats)
+        const defaultId = await findInvestmentCategoryId()
+        setInvestmentCategoryId(defaultId)
+      })()
+    }
+  }, [isOpen, user, findInvestmentCategoryId])
+
+  const resolveCategoryTipo = (c: Category): "income" | "expense" => {
+    const raw = (c as unknown as { tipo?: string }).tipo
+    if (raw === "income" || raw === "expense") return raw
+    if (raw === "receita") return "income"
+    return "expense"
   }
+
 
   const handleSave = async () => {
     if (!user) return

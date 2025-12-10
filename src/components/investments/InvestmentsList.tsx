@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
-import { Calendar, Wallet, Tag, FileText, Edit2, Trash2, TrendingUp, Loader2, Plus } from "lucide-react"
+import { Calendar, Wallet, FileText, Edit2, Trash2, TrendingUp, Loader2, Plus } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { NewCategoryModal } from "@/components/NewCategoryModal"
 
