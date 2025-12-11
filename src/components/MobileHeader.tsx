@@ -34,7 +34,7 @@ export function MobileHeader() {
         <header className="fixed top-0 left-0 right-0 h-16 bg-background/80 backdrop-blur-md border-b border-border/50 z-40 flex items-center justify-between px-4 md:hidden">
             <div className="flex items-center gap-3 flex-1 max-w-[70%]">
                 <img 
-                    src="/favicon.svg" 
+                    src="/favicon.png" 
                     alt="Lumie Logo" 
                     className="h-8 w-8 rounded-full object-cover shadow-sm" 
                 />

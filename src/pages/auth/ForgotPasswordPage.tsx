@@ -73,7 +73,7 @@ export function ForgotPasswordPage() {
                 <CardHeader className="space-y-1">
                     <div className="flex flex-col items-center justify-center mb-6 space-y-3">
                         <img 
-                            src="/favicon.svg" 
+                            src="/favicon.png" 
                             alt="Lumie Logo" 
                             className="h-12 w-12 rounded-full object-cover shadow-md" 
                         />
