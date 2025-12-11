@@ -10,6 +10,10 @@ export default defineConfig({
       registerType: 'autoUpdate',
       // Dica: Adicionei sitemap.xml e robots.txt aqui para o PWA saber que eles existem
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg', 'sitemap.xml', 'robots.txt'], 
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        maximumFileSizeToCacheInBytes: 4000000, 
+      },
       manifest: {
         name: 'Lumie Finance',
         short_name: 'Lumie',
