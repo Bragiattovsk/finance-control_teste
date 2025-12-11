@@ -48,8 +48,8 @@ export function Login() {
         }
     }
 
-    return (
-        <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-zinc-950">
+   return (
+        <div className="dark relative flex min-h-screen items-center justify-center overflow-hidden bg-zinc-950">
             {/* 3D Animated Background */}
             <div className="absolute inset-0 z-0">
                 <div className="absolute -top-[30%] -left-[10%] h-[70vh] w-[70vh] animate-blob rounded-full bg-violet-500/30 mix-blend-multiply blur-3xl filter transition-all duration-10000 ease-in-out"></div>
@@ -64,7 +64,7 @@ export function Login() {
                 <CardHeader className="space-y-1">
                     <div className="flex flex-col items-center justify-center mb-6 space-y-3">
                         <img 
-                            src="/favicon.svg" 
+                             src="/favicon.svg" 
                             alt="Lumie Logo" 
                             className="h-12 w-12 rounded-full object-cover shadow-md" 
                         />
@@ -91,7 +91,7 @@ export function Login() {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
-                                className="bg-zinc-950/50 border-border/50 focus:border-violet-500 focus:ring-violet-500/20"
+                                className="bg-zinc-950/50 border-border/50 focus:border-violet-500 focus:ring-violet-500/20 text-zinc-50"
                             />
                         </div>
                         <div className="space-y-2">
@@ -102,7 +102,7 @@ export function Login() {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
-                                className="bg-zinc-950/50 border-border/50 focus:border-violet-500 focus:ring-violet-500/20"
+                                className="bg-zinc-950/50 border-border/50 focus:border-violet-500 focus:ring-violet-500/20 text-zinc-50"
                             />
                         </div>
                         <div className="flex justify-end">

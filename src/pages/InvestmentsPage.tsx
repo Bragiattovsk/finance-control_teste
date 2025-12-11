@@ -443,16 +443,6 @@ export function InvestmentsPage() {
 
                 <TabsContent value="statement">
                     <div className="space-y-6">
-                        <div className="flex items-center justify-between">
-                            <MonthSelector currentDate={currentDate} onMonthChange={setCurrentDate} />
-                        <div className="flex items-center gap-2">
-                                <Button onClick={() => setIsInvestmentModalOpen(true)} className="gap-2 rounded-lg shadow-sm hover:shadow-md transition-all">
-                                    <Plus className="h-4 w-4" />
-                                    Novo Aporte
-                                </Button>
-                            </div>
-                        </div>
-
                         <div className="grid gap-4 md:grid-cols-3">
                             <Card className="rounded-xl border-border/50 bg-card shadow-sm hover:shadow-md transition-all duration-200">
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
