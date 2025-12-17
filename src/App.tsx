@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
+import { Analytics } from "@vercel/analytics/react"
 import { AuthProvider, PrivateRoute, ActiveAccountRoute } from "@/contexts/AuthContext"
 import { useAuth } from "@/contexts/auth-hooks"
 import { Layout } from "@/components/Layout"
@@ -139,6 +140,7 @@ function App() {
             </DateProvider>
           </PWAProvider>
           <Toaster />
+          <Analytics />
         </ProjectProvider>
       </AuthProvider>
     </BrowserRouter>
