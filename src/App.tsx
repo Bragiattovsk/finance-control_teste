@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
-import { Analytics } from "@vercel/analytics/react"
 import { AuthProvider, PrivateRoute, ActiveAccountRoute } from "@/contexts/AuthContext"
 import { useAuth } from "@/contexts/auth-hooks"
 import { Layout } from "@/components/Layout"
@@ -16,6 +15,7 @@ import { AnalyticsPage } from "@/pages/AnalyticsPage"
 import { AccountRecovery } from "@/pages/AccountRecovery"
 import { ForgotPasswordPage } from "@/pages/auth/ForgotPasswordPage"
 import { UpdatePasswordPage } from "@/pages/auth/UpdatePasswordPage"
+import { ErrorBoundary } from "@/components/ErrorBoundary"
 
 import { AutoLogout } from "@/components/AutoLogout"
 import { SplashScreen } from "@/components/SplashScreen"
@@ -49,64 +49,66 @@ function AppRoutes() {
 
   return (
     <Suspense fallback={<Loading />}>
-      <Routes>
-        {/* Public root: if logado, vai para dashboard; senão, mostra Landing */}
-        <Route
-          path="/"
-          element={user ? <Navigate to="/dashboard" replace /> : <LandingPage />}
-        />
-        <Route path="/terms" element={<TermsPage />} />
-        <Route path="/privacy" element={<PrivacyPage />} />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/contact" element={<ContactPage />} />
-        {/* Login/Auth: se logado, redireciona para dashboard */}
-        <Route
-          path="/login"
-          element={user ? <Navigate to="/dashboard" replace /> : <Login />}
-        />
-        <Route
-          path="/auth"
-          element={user ? <Navigate to="/dashboard" replace /> : <Login />}
-        />
-        <Route
-          path="/register"
-          element={user ? <Navigate to="/dashboard" replace /> : <RegisterPage />}
-        />
-        <Route
-          path="/auth"
-          element={user ? <Navigate to="/dashboard" replace /> : <Login />}
-        />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/update-password" element={<UpdatePasswordPage />} />
-        <Route
-          path="/recovery"
-          element={
-            <PrivateRoute>
-              <AccountRecovery />
-            </PrivateRoute>
-          }
-        />
-        {/* Protected app layout and routes */}
-        <Route
-          path="/"
-          element={
-            <ActiveAccountRoute>
-              <Layout />
-            </ActiveAccountRoute>
-          }
-        >
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="analytics" element={<AnalyticsPage />} />
-          <Route path="transactions" element={<Transactions />} />
-          <Route path="recurrences" element={<Recurrences />} />
-          <Route path="categories" element={<CategoriesPage />} />
-          <Route path="investments" element={<InvestmentsPage />} />
-          <Route path="menu" element={<MenuPage />} />
-          <Route path="settings" element={<Settings />} />
-          <Route path="demo" element={<ShadcnDemo />} />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Route>
-      </Routes>
+      <ErrorBoundary>
+        <Routes>
+          {/* Public root: if logado, vai para dashboard; senão, mostra Landing */}
+          <Route
+            path="/"
+            element={user ? <Navigate to="/dashboard" replace /> : <LandingPage />}
+          />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          {/* Login/Auth: se logado, redireciona para dashboard */}
+          <Route
+            path="/login"
+            element={user ? <Navigate to="/dashboard" replace /> : <Login />}
+          />
+          <Route
+            path="/auth"
+            element={user ? <Navigate to="/dashboard" replace /> : <Login />}
+          />
+          <Route
+            path="/register"
+            element={user ? <Navigate to="/dashboard" replace /> : <RegisterPage />}
+          />
+          <Route
+            path="/auth"
+            element={user ? <Navigate to="/dashboard" replace /> : <Login />}
+          />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/update-password" element={<UpdatePasswordPage />} />
+          <Route
+            path="/recovery"
+            element={
+              <PrivateRoute>
+                <AccountRecovery />
+              </PrivateRoute>
+            }
+          />
+          {/* Protected app layout and routes */}
+          <Route
+            path="/"
+            element={
+              <ActiveAccountRoute>
+                <Layout />
+              </ActiveAccountRoute>
+            }
+          >
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="analytics" element={<AnalyticsPage />} />
+            <Route path="transactions" element={<Transactions />} />
+            <Route path="recurrences" element={<Recurrences />} />
+            <Route path="categories" element={<CategoriesPage />} />
+            <Route path="investments" element={<InvestmentsPage />} />
+            <Route path="menu" element={<MenuPage />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="demo" element={<ShadcnDemo />} />
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Route>
+        </Routes>
+      </ErrorBoundary>
     </Suspense>
   )
 }
@@ -140,7 +142,6 @@ function App() {
             </DateProvider>
           </PWAProvider>
           <Toaster />
-          <Analytics />
         </ProjectProvider>
       </AuthProvider>
     </BrowserRouter>
