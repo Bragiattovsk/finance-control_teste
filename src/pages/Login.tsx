@@ -55,7 +55,7 @@ export function Login() {
                     <div className="flex flex-col space-y-2 text-center">
                         <div className="flex items-center justify-center mb-2">
                             <img 
-                                src="/favicon.svg" 
+                                src="/favicon.png" 
                                 alt="Lumie Logo" 
                                 className="h-10 w-10 rounded-full object-cover shadow-sm" 
                             />
@@ -158,7 +158,7 @@ export function Login() {
 
                 <div className="relative z-20 flex items-center text-lg font-medium">
                     <img 
-                        src="/favicon.svg" 
+                        src="/favicon.png" 
                         alt="Lumie Logo" 
                         className="mr-2 h-6 w-6 rounded-full" 
                     />

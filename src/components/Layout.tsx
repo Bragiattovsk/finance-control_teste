@@ -43,7 +43,7 @@ export function Layout() {
             <aside className="hidden w-64 flex-col border-r bg-white border-zinc-200 dark:bg-zinc-950 dark:border-zinc-800 px-4 py-6 md:flex">
                 <div className="mb-6 flex items-center px-2 gap-[15px]">
                     <img 
-                        src="/favicon.svg" 
+                        src="/favicon.png" 
                         alt="Lumie Logo" 
                         className="h-10 w-10 rounded-full object-cover shadow-md" 
                     />

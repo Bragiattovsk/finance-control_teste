@@ -23,7 +23,7 @@ export default function LandingPage() {
         <div className="container mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <img 
-              src="/favicon.svg" 
+              src="/favicon.png" 
               alt="Lumie Logo" 
               className="w-8 h-8 object-contain rounded-full" 
             />
