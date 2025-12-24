@@ -218,7 +218,7 @@ export const CustomChartWidget: React.FC<CustomChartWidgetProps> = ({ title, cha
             <div className="pb-2 px-0 pt-0">
                 <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
             </div>
-            <div className="flex-1 min-h-0">
+            <div className="flex-1 min-h-[300px]">
                 {renderChart()}
             </div>
         </div>

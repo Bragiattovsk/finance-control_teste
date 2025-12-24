@@ -11,8 +11,9 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Trash2, Pencil, Paperclip } from "lucide-react"
+import { Trash2, Pencil, Paperclip, FileSpreadsheet } from "lucide-react"
 import { NewTransactionModal } from "@/components/NewTransactionModal"
+import { ImportTransactionModal } from "@/components/investments/ImportTransactionModal"
 import { ExportButton } from "@/components/transactions/ExportButton"
 import { ExportReportModal } from "@/components/transactions/ExportReportModal"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -47,6 +48,7 @@ export function Transactions() {
     const { deleteTransaction, deleteFutureInstallments } = useTransactions()
     const [viewingReceiptPath, setViewingReceiptPath] = useState<string | null>(null)
     const [isExportModalOpen, setIsExportModalOpen] = useState(false)
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false)
 
     const fetchTransactions = useCallback(async () => {
         if (!user) return
@@ -179,7 +181,15 @@ export function Transactions() {
                     <Button onClick={() => setIsModalOpen(true)} className="w-full md:w-auto gap-2 shadow-md shadow-primary/25 hover:shadow-primary/40 transition-all">
                         Nova Transação
                     </Button>
-                    <div className="w-full md:w-auto">
+                    <div className="flex gap-2 w-full md:w-auto">
+                        <Button 
+                            variant="outline" 
+                            onClick={() => setIsImportModalOpen(true)}
+                            className="flex-1 md:flex-none gap-2"
+                        >
+                            <FileSpreadsheet className="h-4 w-4" />
+                            Importar
+                        </Button>
                         <ExportButton onClick={() => setIsExportModalOpen(true)} />
                     </div>
                 </div>
@@ -222,8 +232,8 @@ export function Transactions() {
                             </TableRow>
                         ) : (
                             transactions.map((transaction) => (
-                                <TableRow key={transaction.id} className="hover:bg-muted/30 border-border/40 transition-colors">
-                                    <TableCell className="font-medium text-foreground">
+                                <TableRow key={transaction.id} className="group h-16 hover:bg-muted/50 border-border/40 transition-colors data-[state=selected]:bg-muted">
+                                    <TableCell className="font-medium text-foreground py-4 pl-6 text-sm">
                                         {transaction.descricao}
                                         {transaction.attachment_path ? (
                                             <button
@@ -241,46 +251,50 @@ export function Transactions() {
                                             </span>
                                         )}
                                     </TableCell>
-                                    <TableCell>
-                                        {transaction.categories ? (
-                                            <Badge 
-                                                className="border shadow-none hover:bg-opacity-80"
-                                                style={{
-                                                    backgroundColor: transaction.categories.cor ? `${transaction.categories.cor}20` : undefined,
-                                                    color: transaction.categories.cor || undefined,
-                                                    borderColor: transaction.categories.cor ? `${transaction.categories.cor}40` : undefined,
-                                                }}
-                                            >
-                                                {transaction.categories.nome}
-                                            </Badge>
-                                        ) : (
-                                            <span className="text-muted-foreground text-xs">-</span>
-                                        )}
+                                    <TableCell className="py-4 text-sm">
+                                        <div className="flex items-center">
+                                            {transaction.categories ? (
+                                                <Badge 
+                                                    className="border shadow-none hover:bg-opacity-80"
+                                                    style={{
+                                                        backgroundColor: transaction.categories.cor ? `${transaction.categories.cor}20` : undefined,
+                                                        color: transaction.categories.cor || undefined,
+                                                        borderColor: transaction.categories.cor ? `${transaction.categories.cor}40` : undefined,
+                                                    }}
+                                                >
+                                                    {transaction.categories.nome}
+                                                </Badge>
+                                            ) : (
+                                                <span className="text-muted-foreground text-xs">-</span>
+                                            )}
+                                        </div>
                                     </TableCell>
-                                    <TableCell className="text-muted-foreground">{formatDate(transaction.data)}</TableCell>
+                                    <TableCell className="text-muted-foreground py-4 text-sm">{formatDate(transaction.data)}</TableCell>
                                     <TableCell
-                                        className={`text-right font-bold ${transaction.tipo === "receita" ? "text-emerald-500" : "text-rose-500"
+                                        className={`text-right font-bold py-4 text-sm ${transaction.tipo === "receita" ? "text-emerald-500" : "text-rose-500"
                                             }`}
                                     >
                                         {formatCurrency(transaction.valor)}
                                     </TableCell>
-                                    <TableCell className="text-right">
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 mr-1"
-                                            onClick={() => handleEdit(transaction)}
-                                        >
-                                            <Pencil className="h-4 w-4" />
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-8 w-8 text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10"
-                                            onClick={() => handleDelete(transaction)}
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
+                                    <TableCell className="text-right py-4 pr-6">
+                                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                                                onClick={() => handleEdit(transaction)}
+                                            >
+                                                <Pencil className="h-4 w-4" />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8 text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10"
+                                                onClick={() => handleDelete(transaction)}
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             ))
@@ -377,6 +391,12 @@ export function Transactions() {
             <ExportReportModal
                 isOpen={isExportModalOpen}
                 onOpenChange={setIsExportModalOpen}
+            />
+
+            <ImportTransactionModal
+                isOpen={isImportModalOpen}
+                onOpenChange={setIsImportModalOpen}
+                onSuccess={fetchTransactions}
             />
 
             <ConfirmModal

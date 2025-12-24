@@ -24,7 +24,7 @@ import { SplashScreen } from "@/components/SplashScreen"
 const Dashboard = lazy(() => import("@/pages/Dashboard").then(module => ({ default: module.Dashboard })))
 const Transactions = lazy(() => import("@/pages/Transactions").then(module => ({ default: module.Transactions })))
 const Recurrences = lazy(() => import("@/pages/Recurrences").then(module => ({ default: module.Recurrences })))
-const CategoriesPage = lazy(() => import("@/pages/CategoriesPage"))
+const CategoriesPage = lazy(() => import("@/pages/Categories").then(module => ({ default: module.Categories })))
 const InvestmentsPage = lazy(() => import("@/pages/InvestmentsPage").then(module => ({ default: module.InvestmentsPage })))
 const Settings = lazy(() => import("@/pages/Settings").then(module => ({ default: module.Settings })))
 const LandingPage = lazy(() => import("@/pages/LandingPage").then(module => ({ default: module.default })))

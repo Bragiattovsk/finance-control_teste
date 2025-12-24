@@ -56,7 +56,7 @@ export function ExpensePieChart({
             <CardHeader className="pb-2 px-0 pt-0">
                 <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
             </CardHeader>
-            <CardContent className="flex-1 min-h-0 p-0">
+            <CardContent className="flex-1 min-h-[300px] p-0">
                 {data.length === 0 ? (
                     <div className="flex flex-col h-full items-center justify-center text-muted-foreground gap-3">
                         <div className="p-3 bg-muted/10 rounded-full">

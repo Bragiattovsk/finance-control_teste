@@ -1,0 +1,48 @@
+C:\Documentos\Arquivos - Luis\Projetos\teste_gemini\finance-control\src\components\NewGoalModal.tsx: 1 errors, 0 warnings
+  Line 172: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+
+C:\Documentos\Arquivos - Luis\Projetos\teste_gemini\finance-control\src\components\dashboard\AddWidgetDialog.tsx: 3 errors, 0 warnings
+  Line 8: 'Plus' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 8: 'Crown' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 8: 'Loader2' is defined but never used. (@typescript-eslint/no-unused-vars)
+
+C:\Documentos\Arquivos - Luis\Projetos\teste_gemini\finance-control\src\components\theme-provider.tsx: 0 errors, 1 warnings
+  Line 66: Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components. (react-refresh/only-export-components)
+
+C:\Documentos\Arquivos - Luis\Projetos\teste_gemini\finance-control\src\components\ui\badge.tsx: 0 errors, 1 warnings
+  Line 36: Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components. (react-refresh/only-export-components)
+
+C:\Documentos\Arquivos - Luis\Projetos\teste_gemini\finance-control\src\components\ui\button.tsx: 0 errors, 1 warnings
+  Line 57: Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components. (react-refresh/only-export-components)
+
+C:\Documentos\Arquivos - Luis\Projetos\teste_gemini\finance-control\src\contexts\AuthContext.tsx: 0 errors, 1 warnings
+  Line 180: Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components. (react-refresh/only-export-components)
+
+C:\Documentos\Arquivos - Luis\Projetos\teste_gemini\finance-control\src\contexts\ProjectContext.tsx: 0 errors, 1 warnings
+  Line 115: Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components. (react-refresh/only-export-components)
+
+C:\Documentos\Arquivos - Luis\Projetos\teste_gemini\finance-control\src\pages\AnalyticsPage.tsx: 0 errors, 1 warnings
+  Line 50: React Hook useEffect has a missing dependency: 'fetchData'. Either include it or remove the dependency array. (react-hooks/exhaustive-deps)
+
+C:\Documentos\Arquivos - Luis\Projetos\teste_gemini\finance-control\src\pages\Dashboard.tsx: 1 errors, 0 warnings
+  Line 50: Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free. (@typescript-eslint/ban-ts-comment)
+
+C:\Documentos\Arquivos - Luis\Projetos\teste_gemini\finance-control\src\pages\InvestmentsPage.tsx: 4 errors, 0 warnings
+  Line 187: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 192: 'current' is never reassigned. Use 'const' instead. (prefer-const)
+  Line 292: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 348: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+
+C:\Documentos\Arquivos - Luis\Projetos\teste_gemini\finance-control\src\pages\Login.tsx: 1 errors, 0 warnings
+  Line 43: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+
+C:\Documentos\Arquivos - Luis\Projetos\teste_gemini\finance-control\src\pages\Settings.tsx: 2 errors, 1 warnings
+  Line 73: React Hook useEffect has a missing dependency: 'fetchProfile'. Either include it or remove the dependency array. (react-hooks/exhaustive-deps)
+  Line 129: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 161: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+
+C:\Documentos\Arquivos - Luis\Projetos\teste_gemini\finance-control\src\pages\Transactions.tsx: 3 errors, 0 warnings
+  Line 69: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 70: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 91: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+

@@ -9,6 +9,7 @@ import { UpgradeModal } from "@/components/UpgradeModal"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { SummaryCard } from "@/components/dashboard/SummaryCard"
 import {
     PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend,
     XAxis, YAxis, CartesianGrid, AreaChart, Area
@@ -281,63 +282,41 @@ export function AnalyticsPage() {
 
             {/* KPI Cards with Trends */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Patrimônio Total</CardTitle>
-                        <Wallet className="h-4 w-4 text-blue-500" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-blue-600">{formatCurrency(totalPatrimony)}</div>
-                        <p className="text-xs text-muted-foreground">Acumulado Geral</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Receita Global</CardTitle>
-                        <TrendingUp className="h-4 w-4 text-green-500" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-green-600">{formatCurrency(globalIncome)}</div>
-                        <div className="flex items-center gap-1 mt-1">
-                            {kpiTrends.income > 0 ? <TrendingUp className="h-3 w-3 text-green-500" /> : <TrendingDown className="h-3 w-3 text-red-500" />}
-                            <span className={`text-xs ${kpiTrends.income > 0 ? "text-green-500" : "text-red-500"}`}>
-                                {formatPercent(kpiTrends.income)} vs mês anterior
-                            </span>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Despesa Global</CardTitle>
-                        <TrendingDown className="h-4 w-4 text-red-500" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-red-600">{formatCurrency(globalExpense)}</div>
-                        <div className="flex items-center gap-1 mt-1">
-                            {kpiTrends.expense < 0 ? <TrendingDown className="h-3 w-3 text-green-500" /> : <TrendingUp className="h-3 w-3 text-red-500" />}
-                            <span className={`text-xs ${kpiTrends.expense < 0 ? "text-green-500" : "text-red-500"}`}>
-                                {formatPercent(kpiTrends.expense)} vs mês anterior
-                            </span>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Resultado</CardTitle>
-                        <DollarSign className="h-4 w-4 text-purple-500" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className={`text-2xl font-bold ${globalResult >= 0 ? "text-green-600" : "text-red-600"}`}>
-                            {formatCurrency(globalResult)}
-                        </div>
-                        <div className="flex items-center gap-1 mt-1">
-                            {kpiTrends.result > 0 ? <TrendingUp className="h-3 w-3 text-green-500" /> : <TrendingDown className="h-3 w-3 text-red-500" />}
-                            <span className={`text-xs ${kpiTrends.result > 0 ? "text-green-500" : "text-red-500"}`}>
-                                {formatPercent(kpiTrends.result)} vs mês anterior
-                            </span>
-                        </div>
-                    </CardContent>
-                </Card>
+                <SummaryCard
+                    title="Patrimônio Total"
+                    icon={Wallet}
+                    value={totalPatrimony}
+                    description="Acumulado Geral"
+                    className="text-blue-600"
+                    delay={0}
+                />
+                <SummaryCard
+                    title="Receita Global"
+                    icon={TrendingUp}
+                    value={globalIncome}
+                    description={`${formatPercent(kpiTrends.income)} vs mês anterior`}
+                    trend={kpiTrends.income > 0 ? "up" : "down"}
+                    className="text-emerald-600"
+                    delay={100}
+                />
+                <SummaryCard
+                    title="Despesa Global"
+                    icon={TrendingDown}
+                    value={globalExpense}
+                    description={`${formatPercent(kpiTrends.expense)} vs mês anterior`}
+                    trend={kpiTrends.expense < 0 ? "up" : "down"}
+                    className="text-red-600"
+                    delay={200}
+                />
+                <SummaryCard
+                    title="Resultado"
+                    icon={DollarSign}
+                    value={globalResult}
+                    description={`${formatPercent(kpiTrends.result)} vs mês anterior`}
+                    trend={kpiTrends.result > 0 ? "up" : "down"}
+                    className={globalResult >= 0 ? "text-emerald-600" : "text-red-600"}
+                    delay={300}
+                />
             </div>
 
             {/* Evolution Chart */}

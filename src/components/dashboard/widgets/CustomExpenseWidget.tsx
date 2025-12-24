@@ -47,7 +47,7 @@ export const CustomExpenseWidget: React.FC<CustomExpenseWidgetProps> = ({ catego
       <div className="pb-2 px-0 pt-0">
         <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
       </div>
-      <div className="flex-1 min-h-0">
+      <div className="flex-1 min-h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie 

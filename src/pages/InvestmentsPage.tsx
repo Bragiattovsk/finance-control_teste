@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react"
+import { useNavigate } from "react-router-dom"
 import { supabase } from "@/lib/supabase"
 import { useAuth } from "@/contexts/auth-hooks"
 import { useProject } from "@/contexts/project-hooks"
@@ -12,7 +13,7 @@ import { applyProjectScope } from "@/lib/supabase-helpers"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
-import { TrendingUp, TrendingDown, DollarSign, Plus, Loader2, LineChart } from "lucide-react"
+import { TrendingUp, TrendingDown, DollarSign, Plus, Loader2, LineChart, ArrowLeft } from "lucide-react"
 import { InvestmentModal } from "@/components/investments/InvestmentModal"
 import { NewGoalModal } from "@/components/NewGoalModal"
 import { GoalCard } from "@/components/GoalCard"
@@ -20,16 +21,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 // Component for simulation
 import { InvestmentSimulator } from "../components/InvestmentSimulator"
 import { InvestmentsList } from "@/components/investments/InvestmentsList"
-import {
-    AreaChart,
-    Area,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    ResponsiveContainer,
-    Legend
-} from "recharts"
+import { OverviewChart } from "@/components/investments/OverviewChart"
 
 interface MonthlyHistory {
     month: string // YYYY-MM
@@ -59,6 +51,7 @@ interface Goal {
 }
 
 export function InvestmentsPage() {
+    const navigate = useNavigate()
     const { user } = useAuth()
     const { selectedProject } = useProject()
     const { currentDate, setCurrentDate } = useDate()
@@ -255,9 +248,19 @@ export function InvestmentsPage() {
     return (
         <div className="space-y-8 p-1 pb-20 md:pb-0">
             <div className="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Investimentos</h1>
-                    <p className="text-zinc-500 dark:text-zinc-400 mt-1">Gerencie seus aportes e acompanhe a evolução patrimonial.</p>
+                <div className="flex items-start gap-2">
+                    <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="md:hidden -ml-2 text-muted-foreground" 
+                        onClick={() => navigate(-1)}
+                    >
+                        <ArrowLeft className="h-6 w-6" />
+                    </Button>
+                    <div>
+                        <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Investimentos</h1>
+                        <p className="text-zinc-500 dark:text-zinc-400 mt-1">Gerencie seus aportes e acompanhe a evolução patrimonial.</p>
+                    </div>
                 </div>
                 <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
                     <MonthSelector currentDate={currentDate} onMonthChange={setCurrentDate} />
@@ -341,69 +344,7 @@ export function InvestmentsPage() {
                             </Card>
                         </div>
 
-                        <Card className="col-span-4 rounded-xl border-border/50 bg-card shadow-sm overflow-hidden">
-                            <CardHeader className="border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50">
-                                <CardTitle className="text-zinc-900 dark:text-zinc-50">Evolução Patrimonial</CardTitle>
-                            </CardHeader>
-                            <CardContent className="pl-0 pt-6 pr-6">
-                                <div className="h-[360px] md:h-[400px] w-full">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <AreaChart data={historicalData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                                            <defs>
-                                                <linearGradient id="colorRealized" x1="0" y1="0" x2="0" y2="1">
-                                                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8} />
-                                                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                                                </linearGradient>
-                                            </defs>
-                                            <XAxis
-                                                dataKey="displayMonth"
-                                                stroke="hsl(var(--muted-foreground))"
-                                                fontSize={12}
-                                                tickLine={false}
-                                                axisLine={false}
-                                            />
-                                            <YAxis
-                                                tickFormatter={(value) => `R$ ${value}`}
-                                                stroke="hsl(var(--muted-foreground))"
-                                                fontSize={12}
-                                                tickLine={false}
-                                                axisLine={false}
-                                            />
-                                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} className="stroke-zinc-200 dark:stroke-zinc-800" />
-                                            <Tooltip
-                                                formatter={(value) => formatCurrency(Number(value))}
-                                                contentStyle={{
-                                                    backgroundColor: 'hsl(var(--card))',
-                                                    borderColor: 'hsl(var(--border))',
-                                                    color: 'hsl(var(--foreground))',
-                                                    borderRadius: 'var(--radius)'
-                                                }}
-                                                itemStyle={{ color: 'hsl(var(--foreground))' }}
-                                                labelStyle={{ color: 'hsl(var(--muted-foreground))' }}
-                                            />
-                                            <Legend />
-                                            <Area
-                                                type="monotone"
-                                                dataKey="accumulatedGoal"
-                                                name="Meta Acumulada"
-                                                stroke="hsl(var(--muted-foreground))"
-                                                fillOpacity={0}
-                                                strokeDasharray="5 5"
-                                                strokeWidth={2}
-                                            />
-                                            <Area
-                                                type="monotone"
-                                                dataKey="accumulatedRealized"
-                                                name="Patrimônio Real"
-                                                stroke="hsl(var(--primary))"
-                                                fill="url(#colorRealized)"
-                                                strokeWidth={2}
-                                            />
-                                        </AreaChart>
-                                    </ResponsiveContainer>
-                                </div>
-                            </CardContent>
-                        </Card>
+                        <OverviewChart data={historicalData} />
                     </div>
                 </TabsContent>
 

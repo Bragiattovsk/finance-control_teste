@@ -185,7 +185,7 @@ export function WidgetCard({ widget, onDelete, isEditable, transactions = [], st
                         </Button>
                     )}
                 </CardHeader>
-                <CardContent className="flex-1 p-0 min-h-0">
+                <CardContent className="flex-1 p-0 min-h-[300px]">
                     <div className="h-full w-full p-4 pt-0">
                         {renderChart()}
                     </div>

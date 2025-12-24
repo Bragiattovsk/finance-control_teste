@@ -249,9 +249,17 @@ export function NewTransactionModal({
     }
 
     const handleCategorySuccess = (newCategory: Category) => {
-        // Add new category to list
-        setCategories((prev) => [...prev, newCategory].sort((a, b) => a.nome.localeCompare(b.nome)))
-        // Select the new category
+        // 1. Recarrega a lista para garantir que está atualizada
+        fetchCategories()
+
+        // 2. Atualiza estado local otimista para feedback imediato
+        setCategories((prev) => {
+            const exists = prev.some(c => c.id === newCategory.id)
+            if (exists) return prev
+            return [...prev, newCategory].sort((a, b) => a.nome.localeCompare(b.nome))
+        })
+        
+        // 3. AUTO-SELECT: Define o ID da nova categoria
         setCategoryId(newCategory.id)
     }
 

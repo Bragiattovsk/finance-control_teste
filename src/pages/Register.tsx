@@ -4,7 +4,6 @@ import { supabase } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2 } from "lucide-react"
 
@@ -68,21 +67,27 @@ export function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4 font-sans antialiased">
-      <Card className="w-full max-w-md bg-zinc-900/50 border-zinc-800">
-        <CardHeader className="space-y-2 text-center">
-          <div className="flex justify-center mb-4">
-            <span className="font-black text-3xl tracking-tighter text-white">LUMIE</span>
+    <div className="w-full min-h-screen grid lg:grid-cols-2">
+      {/* Left Column - Form */}
+      <div className="flex items-center justify-center py-12 bg-background">
+        <div className="mx-auto w-full max-w-[350px] space-y-6">
+          <div className="flex flex-col space-y-2 text-center">
+            <div className="flex items-center justify-center mb-2">
+               <img 
+                   src="/favicon.svg" 
+                   alt="Lumie Logo" 
+                   className="h-10 w-10 rounded-full object-cover shadow-sm" 
+               />
+            </div>
+            <h1 className="text-2xl font-semibold tracking-tight">Crie sua conta</h1>
+            <p className="text-sm text-muted-foreground">
+              Comece a organizar suas finanças hoje
+            </p>
           </div>
-          <CardTitle className="text-2xl text-white">Crie sua conta</CardTitle>
-          <CardDescription className="text-zinc-400">
-            Comece a organizar suas finanças hoje.
-          </CardDescription>
-        </CardHeader>
-        <form onSubmit={handleRegister}>
-          <CardContent className="space-y-4">
+
+          <form onSubmit={handleRegister} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-zinc-300">Nome Completo</Label>
+              <Label htmlFor="name">Nome Completo</Label>
               <Input
                 id="name"
                 type="text"
@@ -90,11 +95,11 @@ export function Register() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="bg-zinc-950/50 border-zinc-800 text-zinc-100 focus:ring-purple-500/20 focus:border-purple-500"
+                className="bg-background h-12 border-input focus:ring-2 focus:ring-violet-500/20"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-zinc-300">E-mail</Label>
+              <Label htmlFor="email">E-mail</Label>
               <Input
                 id="email"
                 type="email"
@@ -102,11 +107,11 @@ export function Register() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="bg-zinc-950/50 border-zinc-800 text-zinc-100 focus:ring-purple-500/20 focus:border-purple-500"
+                className="bg-background h-12 border-input focus:ring-2 focus:ring-violet-500/20"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-zinc-300">Senha</Label>
+              <Label htmlFor="password">Senha</Label>
               <Input
                 id="password"
                 type="password"
@@ -115,11 +120,11 @@ export function Register() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="bg-zinc-950/50 border-zinc-800 text-zinc-100 focus:ring-purple-500/20 focus:border-purple-500"
+                className="bg-background h-12 border-input focus:ring-2 focus:ring-violet-500/20"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-zinc-300">Confirmar Senha</Label>
+              <Label htmlFor="confirmPassword">Confirmar Senha</Label>
               <Input
                 id="confirmPassword"
                 type="password"
@@ -128,14 +133,13 @@ export function Register() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 minLength={6}
-                className="bg-zinc-950/50 border-zinc-800 text-zinc-100 focus:ring-purple-500/20 focus:border-purple-500"
+                className="bg-background h-12 border-input focus:ring-2 focus:ring-violet-500/20"
               />
             </div>
-          </CardContent>
-          <CardFooter className="flex flex-col gap-4">
+
             <Button 
               type="submit" 
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+              className="w-full h-12 bg-violet-600 hover:bg-violet-700 text-white font-medium transition-all duration-200"
               disabled={loading}
             >
               {loading ? (
@@ -147,15 +151,46 @@ export function Register() {
                 "Criar Conta"
               )}
             </Button>
-            <div className="text-center text-sm text-zinc-400">
-              Já tem uma conta?{" "}
-              <Link to="/login" className="text-purple-400 hover:text-purple-300 hover:underline">
-                Entrar
-              </Link>
-            </div>
-          </CardFooter>
-        </form>
-      </Card>
+          </form>
+
+          <p className="px-8 text-center text-sm text-muted-foreground">
+            Já tem uma conta?{" "}
+            <Link 
+              to="/login" 
+              className="text-primary underline-offset-4 hover:underline transition-colors"
+            >
+              Entrar
+            </Link>
+          </p>
+        </div>
+      </div>
+
+      {/* Right Column - Branding */}
+      <div className="hidden lg:flex relative h-full flex-col justify-between p-10 text-white bg-zinc-900 dark:border-r overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-violet-600/20 to-emerald-600/20 pointer-events-none" />
+        
+        {/* Decorative Elements */}
+        <div className="absolute -top-[30%] -left-[10%] h-[70vh] w-[70vh] rounded-full bg-violet-500/10 blur-3xl" />
+        <div className="absolute -bottom-[30%] -right-[10%] h-[70vh] w-[70vh] rounded-full bg-emerald-500/10 blur-3xl" />
+
+        <div className="relative z-20 flex items-center text-lg font-medium">
+            <img 
+                src="/favicon.svg" 
+                alt="Lumie Logo" 
+                className="mr-2 h-6 w-6 rounded-full" 
+            />
+            Lumie Finance
+        </div>
+
+        <div className="relative z-20 mt-auto">
+          <blockquote className="space-y-2">
+            <p className="text-lg">
+              &ldquo;A melhor decisão para minhas finanças pessoais. Interface limpa e intuitiva.&rdquo;
+            </p>
+            <footer className="text-sm text-zinc-400">Marcus Chen</footer>
+          </blockquote>
+        </div>
+      </div>
     </div>
   )
 }

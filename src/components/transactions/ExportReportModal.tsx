@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Calendar, Download, Loader2 } from "lucide-react"
 import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, subMonths } from "date-fns"
-import ExcelJS from "exceljs"
+import * as XLSX from "xlsx"
 import { supabase } from "@/lib/supabase"
 import { useAuth } from "@/contexts/auth-hooks"
 import { Transaction } from "@/types"
@@ -20,7 +20,7 @@ interface ExportReportModalProps {
 }
 
 export function ExportReportModal({ open, onOpenChange, isOpen, onClose }: ExportReportModalProps) {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const { toast } = useToast()
   const [startDate, setStartDate] = useState<string>("")
   const [endDate, setEndDate] = useState<string>("")
@@ -71,94 +71,67 @@ export function ExportReportModal({ open, onOpenChange, isOpen, onClose }: Expor
         .order('data', { ascending: true })
         .limit(5000)
 
-      let totalReceita = 0
-      let totalDespesa = 0
+      // 0. Cálculo de Totais (Pré-processamento)
+      let totalReceitas = 0;
+      let totalDespesas = 0;
 
-      const processed = await Promise.all((transactions || []).map(async (t: Transaction) => {
-        const dateStr = new Date(t.data).toLocaleDateString('pt-BR')
-        const description = t.descricao
-        const category = t.categories?.nome || ''
-        const amount = Number(t.valor) || 0
-        const typeLabel = t.tipo === 'receita' ? 'Entrada' : 'Saída'
-        const statusLabel = t.pago ? 'Pago' : 'Pendente'
-        let signedUrl: string | null = null
+      (transactions || []).forEach((t: Transaction) => {
+        const val = Number(t.valor) || 0;
+        if (t.tipo === 'receita') totalReceitas += val;
+        else totalDespesas += val;
+      });
 
-        if (t.attachment_path) {
-          try {
-            const { data: urlData } = await supabase.storage
-              .from('receipts')
-              .createSignedUrl(t.attachment_path, 604800)
-            signedUrl = urlData?.signedUrl ?? null
-          } catch {
-            signedUrl = null
-          }
-        }
+      const saldoLiquido = totalReceitas - totalDespesas;
 
-        if (t.tipo === 'receita') totalReceita += amount
-        else totalDespesa += amount
+      // 1. Cabeçalho Institucional e Resumo
+      const sheetData: any[][] = [
+        ['LUMIE FINANCE CONTROL'],
+        ['Relatório de Transações'],
+        ['Gerado em:', new Date().toLocaleString()],
+        ['Usuário:', profile?.full_name || user.email || 'N/A'],
+        [], // Linha 5 (Vazia)
+        ['RESUMO DO PERÍODO'], // Linha 6
+        ['Total Receitas:', totalReceitas], // Linha 7
+        ['Total Despesas:', totalDespesas], // Linha 8
+        ['Saldo Líquido:', saldoLiquido], // Linha 9
+        [], // Linha 10 (Vazia)
+        ['Data', 'Descrição', 'Categoria', 'Tipo', 'Valor'] // Linha 11 (Cabeçalho da Tabela)
+      ];
 
-        return { dateStr, description, category, amount, typeLabel, statusLabel, signedUrl }
-      }))
+      // 2. Dados
+      (transactions || []).forEach((t: Transaction) => {
+        const dateStr = new Date(t.data).toLocaleDateString('pt-BR'); // Formato dd/MM/yyyy
+        const amount = Number(t.valor) || 0;
+        const category = t.categories?.nome || '';
+        const typeLabel = t.tipo === 'receita' ? 'Receita' : 'Despesa'; // Tradução solicitada
 
-      const workbook = new ExcelJS.Workbook()
-      const worksheet = workbook.addWorksheet('Relatório Contábil')
-
-      worksheet.columns = [
-        { header: 'Data', key: 'data', width: 15 },
-        { header: 'Descrição', key: 'descricao', width: 40 },
-        { header: 'Categoria', key: 'categoria', width: 20 },
-        { header: 'Valor', key: 'valor', width: 15 },
-        { header: 'Tipo', key: 'tipo', width: 10 },
-        { header: 'Status', key: 'status', width: 10 },
-        { header: 'Comprovante', key: 'comprovante', width: 25 },
-      ]
-
-      worksheet.getRow(1).font = { bold: true }
-      worksheet.getColumn('valor').numFmt = '"R$"#,##0.00'
-
-      worksheet.getRow(2).values = ['Período:', `${startDate} até ${endDate}`]
-
-      processed.forEach((item) => {
-        const row = worksheet.addRow({
-          data: item.dateStr,
-          descricao: item.description,
-          categoria: item.category,
-          valor: item.amount,
-          tipo: item.typeLabel,
-          status: item.statusLabel,
-          comprovante: item.signedUrl ? 'Ver Comprovante' : '',
-        })
-        if (item.signedUrl) {
-          const cell = row.getCell('comprovante')
-          cell.value = { text: 'Ver Comprovante', hyperlink: item.signedUrl }
-          cell.font = { color: { argb: 'FF0000FF' }, underline: true }
-        }
+        sheetData.push([
+          dateStr,
+          t.descricao,
+          category,
+          typeLabel,
+          amount
+        ])
       })
 
-      const totalRow = worksheet.addRow({
-        data: '',
-        descricao: 'TOTAIS',
-        categoria: '',
-        valor: totalReceita - totalDespesa,
-        tipo: '',
-        status: '',
-        comprovante: '',
-      })
-      totalRow.font = { bold: true }
+      // 3. Geração da Planilha
+      const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
 
-      const fileName = `Relatorio_Contabil_${format(new Date(startDate), 'yyyy-MM-dd')}_${format(new Date(endDate), 'yyyy-MM-dd')}.xlsx`
-      const buffer = await workbook.xlsx.writeBuffer()
-      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = fileName
-      document.body.appendChild(a)
-      a.click()
-      setTimeout(() => {
-        URL.revokeObjectURL(url)
-        a.remove()
-      }, 0)
+      // 4. Ajuste Visual (Largura das Colunas)
+      worksheet['!cols'] = [
+        { wch: 20 }, // Data / Rótulos do Resumo
+        { wch: 40 }, // Descrição
+        { wch: 15 }, // Categoria
+        { wch: 15 }, // Tipo
+        { wch: 15 }  // Valor
+      ];
+
+      // 5. Finalização
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Relatório");
+
+      const fileName = `Relatorio_Lumie_${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
 
       if ((transactions || []).length === 5000) {
         toast({
@@ -170,8 +143,14 @@ export function ExportReportModal({ open, onOpenChange, isOpen, onClose }: Expor
       setLoading(false)
       onOpenChange?.(false)
       onClose?.()
-    } catch {
+    } catch (error) {
+      console.error(error)
       setLoading(false)
+      toast({
+        title: "Erro",
+        description: "Erro ao gerar relatório.",
+        variant: "destructive"
+      })
     }
   }
 

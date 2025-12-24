@@ -32,9 +32,12 @@ export function GoalCard({ goal, onEdit, onDelete }: GoalCardProps) {
     const [currentBalance, setCurrentBalance] = useState(0)
     const [loading, setLoading] = useState(true)
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+    const [animatedProgress, setAnimatedProgress] = useState(0)
 
     // Defensive coding: Ensure categories is always an array
     const categoriesList: Category[] = useMemo(() => Array.isArray(goal.categories) ? goal.categories : [], [goal.categories])
+
+    const progress = Math.min(100, (currentBalance / goal.target_amount) * 100)
 
     useEffect(() => {
         const fetchBalance = async () => {
@@ -67,6 +70,13 @@ export function GoalCard({ goal, onEdit, onDelete }: GoalCardProps) {
         fetchBalance()
     }, [categoriesList])
 
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setAnimatedProgress(progress)
+        }, 500)
+        return () => clearTimeout(timer)
+    }, [progress])
+
     const handleDeleteClick = () => {
         setIsDeleteModalOpen(true)
     }
@@ -97,7 +107,6 @@ export function GoalCard({ goal, onEdit, onDelete }: GoalCardProps) {
         )
     }
 
-    const progress = Math.min(100, (currentBalance / goal.target_amount) * 100)
     const remainingAmount = Math.max(0, goal.target_amount - currentBalance)
 
     // Calculate months remaining
@@ -116,76 +125,92 @@ export function GoalCard({ goal, onEdit, onDelete }: GoalCardProps) {
         : "Nenhuma categoria vinculada"
 
     return (
-        <Card className="group rounded-xl border-border/50 bg-card shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col justify-between">
-            <CardHeader className="pb-3 border-b border-border/40 bg-muted/20">
-                <div className="flex justify-between items-start">
-                    <div>
-                        <CardTitle className="text-lg font-bold flex items-center gap-2">
-                            <Target className="h-5 w-5 text-primary" />
+        <Card className="group rounded-xl border-border/50 bg-card shadow-sm hover:shadow-md transition-all duration-300 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <CardHeader className="p-5 md:p-6 pb-2">
+                <div className="flex justify-between items-start gap-4">
+                    <div className="space-y-1">
+                        <CardTitle className="text-lg font-semibold tracking-tight flex items-center gap-2">
+                            <Target className="h-5 w-5 text-primary/80" />
                             {goal.title}
                         </CardTitle>
-                        <p className="text-sm text-muted-foreground mt-1 line-clamp-1" title={categoryNames}>
-                            Vinculado a: <span className="font-medium text-foreground">{categoryNames}</span>
+                        <p className="text-sm text-muted-foreground line-clamp-1" title={categoryNames}>
+                            {categoryNames}
                         </p>
                     </div>
-                    <div className="text-right">
-                        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Meta</div>
-                        <div className="font-bold text-lg text-primary">{formatCurrency(goal.target_amount)}</div>
+                    <div className="text-right shrink-0">
+                        <div className="text-xs font-medium text-muted-foreground mb-1 uppercase tracking-wider">Meta</div>
+                        <div className="text-2xl font-bold tracking-tight text-primary">
+                            {formatCurrency(goal.target_amount)}
+                        </div>
                     </div>
                 </div>
             </CardHeader>
-            <CardContent className="pt-4 space-y-4">
-                <div>
-                    <div className="flex justify-between text-sm mb-2">
-                        <span className="font-medium text-muted-foreground">Progresso Atual</span>
+
+            <CardContent className="p-5 md:p-6 pt-2">
+                <div className="my-6 space-y-3">
+                    <div className="flex justify-between text-sm">
+                        <span className="font-medium text-zinc-600 dark:text-zinc-400">Progresso</span>
                         <span className={cn("font-bold", isOnTrack ? "text-emerald-600" : "text-yellow-600")}>
                             {progress.toFixed(1)}%
                         </span>
                     </div>
-                    <Progress 
-                        value={progress} 
+                    <Progress
+                        value={animatedProgress}
                         className={cn(
-                            "h-2.5", 
-                            isOnTrack 
-                                ? "bg-emerald-500/20 [&>div]:bg-emerald-500" 
-                                : "bg-yellow-500/20 [&>div]:bg-yellow-500"
-                        )} 
+                            "h-3 [&>div]:transition-all [&>div]:duration-1000 [&>div]:ease-out",
+                            isOnTrack
+                                ? "bg-emerald-500/10 [&>div]:bg-emerald-500"
+                                : "bg-yellow-500/10 [&>div]:bg-yellow-500"
+                        )}
                     />
-                    <div className="flex justify-between text-xs text-muted-foreground mt-2">
-                        <span className="font-medium">{formatCurrency(currentBalance)}</span>
-                        <span>Falta {formatCurrency(remainingAmount)}</span>
+                    <div className="flex justify-between text-xs font-medium text-zinc-600 dark:text-zinc-400 mt-2">
+                        <span>Atual: {formatCurrency(currentBalance)}</span>
+                        <span>Falta: {formatCurrency(remainingAmount)}</span>
                     </div>
                 </div>
 
-                <div className="bg-muted/30 p-3 rounded-lg border border-border/50 space-y-2">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Calendar className="h-4 w-4" />
-                        <span>Prazo: <span className="text-foreground font-medium">{new Date(goal.deadline).toLocaleDateString("pt-BR")}</span> ({monthsRemaining > 0 ? `${monthsRemaining} meses` : "Vencido"})</span>
+                <div className="space-y-3 mb-6">
+                    <div className="flex items-center gap-3 text-sm text-zinc-600 dark:text-zinc-400">
+                        <Calendar className="h-4 w-4 shrink-0" />
+                        <span>
+                            Prazo: <span className="font-semibold text-foreground">{new Date(goal.deadline).toLocaleDateString("pt-BR")}</span>
+                            <span className="ml-1 opacity-80">({monthsRemaining > 0 ? `${monthsRemaining} meses` : "Vencido"})</span>
+                        </span>
                     </div>
 
                     {remainingAmount > 0 && monthsRemaining > 0 && (
-                        <div className="flex items-start gap-2 text-sm">
-                            <TrendingUp className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
-                            <span className="text-muted-foreground">
-                                Para atingir a meta, invista <span className="font-bold text-emerald-600">{formatCurrency(monthlyNeeded)}</span> por mês.
+                        <div className="flex items-start gap-3 text-sm text-zinc-600 dark:text-zinc-400">
+                            <TrendingUp className="h-4 w-4 shrink-0 mt-0.5" />
+                            <span>
+                                Investir <span className="font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(monthlyNeeded)}</span> / mês
                             </span>
                         </div>
                     )}
 
                     {remainingAmount <= 0 && (
-                        <div className="text-sm font-bold text-emerald-600 flex items-center gap-2">
+                        <div className="flex items-center gap-3 text-sm font-bold text-emerald-600 dark:text-emerald-400">
                             <Target className="h-4 w-4" />
-                            Meta Atingida! Parabéns!
+                            <span>Meta Atingida! Parabéns!</span>
                         </div>
                     )}
                 </div>
 
-                <div className="flex gap-2 pt-2">
-                    <Button variant="outline" size="sm" className="flex-1 gap-2 hover:bg-muted" onClick={() => onEdit(goal)}>
-                        <Edit2 className="h-3 w-3" />
+                <div className="flex gap-3 pt-4 border-t border-border/40">
+                    <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="flex-1 gap-2 text-muted-foreground hover:text-foreground hover:bg-muted/50" 
+                        onClick={() => onEdit(goal)}
+                    >
+                        <Edit2 className="h-4 w-4" />
                         Editar
                     </Button>
-                    <Button variant="outline" size="sm" className="w-10 px-0 text-destructive hover:text-destructive hover:bg-destructive/10 hover:border-destructive/50" onClick={handleDeleteClick}>
+                    <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-muted-foreground hover:text-destructive hover:bg-destructive/10" 
+                        onClick={handleDeleteClick}
+                    >
                         <Trash2 className="h-4 w-4" />
                     </Button>
                 </div>
