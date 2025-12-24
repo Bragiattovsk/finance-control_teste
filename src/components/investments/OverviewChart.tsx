@@ -2,8 +2,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts"
 import { formatCurrency } from "@/lib/format"
 
+interface OverviewDataPoint {
+    displayMonth: string;
+    accumulatedGoal: number;
+    accumulatedRealized: number;
+    [key: string]: string | number;
+}
+
 interface OverviewChartProps {
-    data: any[]
+    data: OverviewDataPoint[]
 }
 
 export function OverviewChart({ data }: OverviewChartProps) {

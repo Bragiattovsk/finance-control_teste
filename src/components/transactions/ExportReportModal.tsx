@@ -84,7 +84,7 @@ export function ExportReportModal({ open, onOpenChange, isOpen, onClose }: Expor
       const saldoLiquido = totalReceitas - totalDespesas;
 
       // 1. Cabeçalho Institucional e Resumo
-      const sheetData: any[][] = [
+      const sheetData: (string | number)[][] = [
         ['LUMIE FINANCE CONTROL'],
         ['Relatório de Transações'],
         ['Gerado em:', new Date().toLocaleString()],

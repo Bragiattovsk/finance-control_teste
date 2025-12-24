@@ -18,12 +18,12 @@ interface ImportedTransaction {
 }
 
 interface RawRow {
-  Data: any;
-  Descricao: any;
-  Valor: any;
-  Categoria: any;
-  Tipo: any;
-  [key: string]: any;
+  Data: unknown;
+  Descricao: unknown;
+  Valor: unknown;
+  Categoria: unknown;
+  Tipo: unknown;
+  [key: string]: unknown;
 }
 
 interface TransactionImporterProps {
@@ -56,34 +56,20 @@ export function TransactionImporter({ onSuccess }: TransactionImporterProps) {
     return new Date(date_info.getFullYear(), date_info.getMonth(), date_info.getDate(), hours, minutes, seconds);
   };
 
-  const parseDate = (value: any): Date | string => {
+  const parseDate = (value: unknown): Date | string => {
     if (typeof value === 'number') {
       return excelDateToJSDate(value);
     }
     if (value instanceof Date) return value;
     // Tenta fazer o parse de string se necessário, ou retorna a string original
-    return value;
+    return value as string;
   };
 
-  const normalizeType = (value: any): 'income' | 'expense' => {
+  const normalizeType = (value: unknown): 'income' | 'expense' => {
     if (!value) return 'expense';
     const str = String(value).toLowerCase().trim();
     if (str === 'receita' || str === 'income') return 'income';
     return 'expense';
-  };
-
-  // Helper para normalizar chaves de busca
-  const normalizeKey = (key: string) => 
-    key.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-
-  // Função de busca inteligente de valores
-  const findValue = (row: any, possibleKeys: string[]) => {
-    const rowKeys = Object.keys(row);
-    for (const possibleKey of possibleKeys) {
-      const foundKey = rowKeys.find(k => normalizeKey(k) === possibleKey);
-      if (foundKey) return row[foundKey];
-    }
-    return undefined;
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement> | React.DragEvent) => {
@@ -136,9 +122,9 @@ export function TransactionImporter({ onSuccess }: TransactionImporterProps) {
         const mappedData: ImportedTransaction[] = data.map((row) => {
            return {
              Data: parseDate(row.Data),
-             Descricao: row.Descricao || row['Descrição'] || row['descrição'] || 'Sem descrição',
+             Descricao: (row.Descricao as string) || (row['Descrição'] as string) || (row['descrição'] as string) || 'Sem descrição',
              Valor: Number(row.Valor) || 0,
-             Categoria: row.Categoria || 'Outros',
+             Categoria: (row.Categoria as string) || 'Outros',
              Tipo: normalizeType(row.Tipo)
            };
         });
@@ -204,12 +190,12 @@ export function TransactionImporter({ onSuccess }: TransactionImporterProps) {
         if (fetchError) throw fetchError;
 
         const existingMap = new Map<string, string>(
-            (existingCategories as any[])?.map(c => [c.nome.toLowerCase(), c.id]) || []
+            (existingCategories as { id: string; nome: string }[])?.map(c => [c.nome.toLowerCase(), c.id]) || []
         );
         const categoryMap = new Map<string, string>(); // Nome original -> ID
 
         // 3. Identificar novas categorias
-        const newCategoriesToInsert: any[] = [];
+        const newCategoriesToInsert: { user_id: string; nome: string; tipo: string; cor: string }[] = [];
         
         uniqueCategoryNames.forEach(catName => {
             const lowerName = catName.toLowerCase();
@@ -239,7 +225,7 @@ export function TransactionImporter({ onSuccess }: TransactionImporterProps) {
 
             if (insertError) throw insertError;
 
-            (insertedCategories as any[])?.forEach(c => {
+            (insertedCategories as { id: string; nome: string }[])?.forEach(c => {
                 // Mapeia o nome que foi inserido (pode ter mudado caso banco force algo, mas aqui assumimos igual)
                 // Precisamos mapear o nome original do Excel para o novo ID.
                 // Como inserimos em batch, a ordem pode não ser garantida ou os nomes podem vir diferentes?
@@ -264,7 +250,7 @@ export function TransactionImporter({ onSuccess }: TransactionImporterProps) {
                 try {
                     const d = new Date(t.Data);
                     if (!isNaN(d.getTime())) dateStr = d.toISOString();
-                } catch (e) {
+                } catch {
                     console.error("Data inválida no payload", t.Data);
                 }
             }
@@ -303,11 +289,11 @@ export function TransactionImporter({ onSuccess }: TransactionImporterProps) {
         // Limpar estado
         handleCancel();
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Erro na importação:', error);
         toast({
             title: "Erro ao importar",
-            description: error.message || "Ocorreu um erro ao salvar os dados.",
+            description: (error as Error).message || "Ocorreu um erro ao salvar os dados.",
             variant: "destructive"
         });
     } finally {
