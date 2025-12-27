@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo, useRef, useCallback } from "react"
 import { Session, User } from "@supabase/supabase-js"
+import { useNavigate, Navigate } from "react-router-dom"
 import { supabase } from "@/lib/supabase"
 import { Profile } from "@/types"
 import { AuthContext } from "./auth-context"
@@ -13,6 +14,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [loading, setLoading] = useState(true)
     const [isDeletionScheduled, setIsDeletionScheduled] = useState(false)
     const [deletionDate, setDeletionDate] = useState<string | null>(null)
+    const navigate = useNavigate()
 
     // Ref to track user for onAuthStateChange listener (avoids stale closure)
     const userRef = useRef<User | null>(null)
@@ -140,11 +142,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, [fetchProfileData])
 
     const signOut = async () => {
-        posthog.reset()
-        await supabase.auth.signOut()
-        setIsDeletionScheduled(false)
-        setDeletionDate(null)
-        setProfile(null)
+        try {
+            posthog.reset()
+            await supabase.auth.signOut()
+        } catch (error) {
+            console.error("Erro ao realizar logout no servidor:", error)
+        } finally {
+            setIsDeletionScheduled(false)
+            setDeletionDate(null)
+            setUser(null)
+            setSession(null)
+            setProfile(null)
+            localStorage.removeItem("finance_app_last_activity")
+            navigate("/login")
+        }
     }
 
     const refreshProfile = useCallback(async () => {
@@ -174,7 +185,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     )
 }
 
-import { Navigate } from "react-router-dom"
 
 export function PrivateRoute({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth()

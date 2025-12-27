@@ -381,9 +381,9 @@ export function InvestmentsList({ onChanged }: InvestmentsListProps) {
                             .map((cat) => (
                             <SelectItem key={cat.id} value={cat.id}>
                                 <div className="flex items-center gap-2">
-                                <div className="h-2 w-2 rounded-full" style={{ backgroundColor: cat.cor }} />
+                                <div className="h-2 w-2 rounded-full" style={{ backgroundColor: cat.cor || undefined }} />
                                 {cat.nome}
-                                </div>
+                            </div>
                             </SelectItem>
                             ))
                         ) : (

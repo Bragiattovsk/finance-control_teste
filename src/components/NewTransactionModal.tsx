@@ -115,7 +115,7 @@ export function NewTransactionModal({
         try {
             const { data, error } = await supabase
                 .from("categories")
-                .select("id, nome, cor, tipo, is_investment")
+                .select("id, user_id, nome, cor, tipo, is_investment")
                 .eq("user_id", user.id)
                 .order("nome")
 
@@ -256,7 +256,9 @@ export function NewTransactionModal({
         setCategories((prev) => {
             const exists = prev.some(c => c.id === newCategory.id)
             if (exists) return prev
-            return [...prev, newCategory].sort((a, b) => a.nome.localeCompare(b.nome))
+            // Ensure newCategory has user_id
+            const completeCategory = { ...newCategory, user_id: user?.id || '' };
+            return [...prev, completeCategory].sort((a, b) => a.nome.localeCompare(b.nome))
         })
         
         // 3. AUTO-SELECT: Define o ID da nova categoria
@@ -381,7 +383,7 @@ export function NewTransactionModal({
                                                 <div className="flex items-center gap-2">
                                                     <div
                                                         className="h-3 w-3 rounded-full"
-                                                        style={{ backgroundColor: cat.cor }}
+                                                        style={{ backgroundColor: cat.cor || undefined }}
                                                     />
                                                     {cat.nome}
                                                 </div>

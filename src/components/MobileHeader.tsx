@@ -27,7 +27,6 @@ export function MobileHeader() {
 
     const handleSignOut = async () => {
         await signOut()
-        navigate("/login")
     }
 
     return (

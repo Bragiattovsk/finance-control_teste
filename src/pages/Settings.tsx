@@ -174,17 +174,7 @@ export function Settings() {
     }
 
     const handleSignOut = async () => {
-        try {
-            await signOut()
-            navigate("/login")
-        } catch (error) {
-            console.error("Error signing out:", error)
-            toast({
-                variant: "destructive",
-                title: "Erro ao sair",
-                description: "Não foi possível encerrar a sessão. Tente novamente."
-            })
-        }
+        await signOut()
     }
 
     const handleSetupCategories = async () => {

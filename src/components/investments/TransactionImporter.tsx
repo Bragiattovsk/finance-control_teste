@@ -30,6 +30,25 @@ interface TransactionImporterProps {
   onSuccess?: () => void;
 }
 
+const AUTO_CATEGORY_COLORS = [
+  '#10b981', // Emerald-500
+  '#3b82f6', // Blue-500
+  '#8b5cf6', // Violet-500
+  '#f43f5e', // Rose-500
+  '#f59e0b', // Amber-500
+  '#06b6d4', // Cyan-500
+  '#ec4899', // Pink-500
+  '#84cc16', // Lime-500
+  '#6366f1', // Indigo-500
+  '#14b8a6', // Teal-500
+  '#f97316', // Orange-500
+];
+
+const getRandomColor = () => {
+  const randomIndex = Math.floor(Math.random() * AUTO_CATEGORY_COLORS.length);
+  return AUTO_CATEGORY_COLORS[randomIndex];
+};
+
 export function TransactionImporter({ onSuccess }: TransactionImporterProps) {
   const [previewData, setPreviewData] = useState<ImportedTransaction[]>([]);
   const [isDragging, setIsDragging] = useState(false);
@@ -38,31 +57,48 @@ export function TransactionImporter({ onSuccess }: TransactionImporterProps) {
   const { toast } = useToast();
   const { user } = useAuth();
 
-  const excelDateToJSDate = (serial: number): Date => {
-    const utc_days  = Math.floor(serial - 25569);
-    const utc_value = utc_days * 86400;
-    const date_info = new Date(utc_value * 1000);
+  const parseExcelDate = (value: any): string | null => {
+    if (!value) return null;
 
-    const fractional_day = serial - Math.floor(serial) + 0.0000001;
-    let total_seconds = Math.floor(86400 * fractional_day);
+    let dateObj: Date | null = null;
 
-    const seconds = total_seconds % 60;
-
-    total_seconds -= seconds;
-
-    const hours = Math.floor(total_seconds / (60 * 60));
-    const minutes = Math.floor(total_seconds / 60) % 60;
-
-    return new Date(date_info.getFullYear(), date_info.getMonth(), date_info.getDate(), hours, minutes, seconds);
-  };
-
-  const parseDate = (value: unknown): Date | string => {
+    // Caso 1: Número Serial do Excel (ex: 45280)
     if (typeof value === 'number') {
-      return excelDateToJSDate(value);
+      // Data base do Excel: 30 de Dezembro de 1899
+      const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+      const msPerDay = 24 * 60 * 60 * 1000;
+      
+      // Adiciona o valor em dias + 12 horas de margem de segurança (0.5 dia)
+      // Isso garante que caiamos no meio-dia UTC, evitando shifts de fuso.
+      const safeTime = excelEpoch.getTime() + (value * msPerDay) + (12 * 60 * 60 * 1000);
+      dateObj = new Date(safeTime);
     }
-    if (value instanceof Date) return value;
-    // Tenta fazer o parse de string se necessário, ou retorna a string original
-    return value as string;
+    // Caso 2: String (ex: '05/12/2025' ou '2025-12-05')
+    else if (typeof value === 'string') {
+      const cleanValue = value.trim();
+      
+      // Tenta detectar formato BR (dd/mm/aaaa)
+      if (cleanValue.includes('/')) {
+        const [day, month, year] = cleanValue.split('/').map(Number);
+        if (day && month && year) {
+          // Cria ao meio-dia local (12:00:00)
+          dateObj = new Date(year, month - 1, day, 12, 0, 0);
+        }
+      } 
+      // Fallback para ISO ou outros formatos
+      else {
+        // Tenta parsear e setar para meio dia se for válido
+        const tempDate = new Date(cleanValue);
+        if (!isNaN(tempDate.getTime())) {
+          tempDate.setHours(12, 0, 0);
+          dateObj = tempDate;
+        }
+      }
+    }
+
+    if (!dateObj || isNaN(dateObj.getTime())) return null;
+
+    return dateObj.toISOString();
   };
 
   const normalizeType = (value: unknown): 'income' | 'expense' => {
@@ -121,7 +157,7 @@ export function TransactionImporter({ onSuccess }: TransactionImporterProps) {
         
         const mappedData: ImportedTransaction[] = data.map((row) => {
            return {
-             Data: parseDate(row.Data),
+             Data: parseExcelDate(row.Data) || String(row.Data),
              Descricao: (row.Descricao as string) || (row['Descrição'] as string) || (row['descrição'] as string) || 'Sem descrição',
              Valor: Number(row.Valor) || 0,
              Categoria: (row.Categoria as string) || 'Outros',
@@ -184,13 +220,13 @@ export function TransactionImporter({ onSuccess }: TransactionImporterProps) {
         // 2. Buscar categorias existentes
         const { data: existingCategories, error: fetchError } = await supabase
             .from('categories')
-            .select('id, nome')
+            .select('id, nome, cor')
             .eq('user_id', user.id);
 
         if (fetchError) throw fetchError;
 
         const existingMap = new Map<string, string>(
-            (existingCategories as { id: string; nome: string }[])?.map(c => [c.nome.toLowerCase(), c.id]) || []
+            (existingCategories as { id: string; nome: string; cor: string }[])?.map(c => [c.nome.toLowerCase(), c.id]) || []
         );
         const categoryMap = new Map<string, string>(); // Nome original -> ID
 
@@ -207,25 +243,29 @@ export function TransactionImporter({ onSuccess }: TransactionImporterProps) {
                 const firstTx = previewData.find(t => t.Categoria.trim() === catName);
                 const type = firstTx?.Tipo || 'expense'; 
                 
-                newCategoriesToInsert.push({
+                const randomColor = getRandomColor();
+                const newCategoryPayload = {
                     user_id: user.id,
                     nome: catName,
                     tipo: type, 
-                    cor: '#64748b' // Default slate-500
-                });
+                    cor: randomColor
+                };
+                console.log('Preparando nova categoria:', newCategoryPayload);
+                newCategoriesToInsert.push(newCategoryPayload);
             }
         });
 
         // 4. Inserir novas categorias
         if (newCategoriesToInsert.length > 0) {
+            console.log('Payload de Categorias:', newCategoriesToInsert);
             const { data: insertedCategories, error: insertError } = await supabase
                 .from('categories')
                 .insert(newCategoriesToInsert)
-                .select();
+                .select('id, nome, cor');
 
             if (insertError) throw insertError;
 
-            (insertedCategories as { id: string; nome: string }[])?.forEach(c => {
+            (insertedCategories as { id: string; nome: string; cor: string }[])?.forEach(c => {
                 // Mapeia o nome que foi inserido (pode ter mudado caso banco force algo, mas aqui assumimos igual)
                 // Precisamos mapear o nome original do Excel para o novo ID.
                 // Como inserimos em batch, a ordem pode não ser garantida ou os nomes podem vir diferentes?
@@ -357,7 +397,11 @@ export function TransactionImporter({ onSuccess }: TransactionImporterProps) {
                   {previewData.slice(0, 5).map((t, i) => (
                     <TableRow key={i} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-zinc-200 dark:border-zinc-800">
                        <TableCell className="text-zinc-600 dark:text-zinc-400">
-                         {t.Data instanceof Date ? t.Data.toLocaleDateString('pt-BR') : String(t.Data)}
+                         {t.Data instanceof Date 
+                           ? t.Data.toLocaleDateString('pt-BR') 
+                           : !isNaN(new Date(t.Data).getTime()) 
+                               ? new Date(t.Data).toLocaleDateString('pt-BR') 
+                               : String(t.Data)}
                        </TableCell>
                        <TableCell className="text-zinc-600 dark:text-zinc-400">{t.Descricao}</TableCell>
                        <TableCell className="text-zinc-600 dark:text-zinc-400">{t.Categoria}</TableCell>

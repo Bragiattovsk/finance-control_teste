@@ -294,7 +294,7 @@ export function InvestmentModal({ isOpen, onClose, onSuccess }: InvestmentModalP
                         .map((cat) => (
                           <SelectItem key={cat.id} value={cat.id}>
                             <div className="flex items-center gap-2">
-                              <div className="h-3 w-3 rounded-full" style={{ backgroundColor: cat.cor }} />
+                              <div className="h-3 w-3 rounded-full" style={{ backgroundColor: cat.cor || undefined }} />
                               {cat.nome}
                             </div>
                           </SelectItem>

@@ -9,8 +9,9 @@ export interface Project {
 
 export interface Category {
     id: string;
+    user_id: string;
     nome: string;
-    cor: string;
+    cor?: string | null;
     is_investment?: boolean;
     tipo: 'income' | 'expense';
 }

@@ -219,7 +219,7 @@ export function Categories() {
                                                         className="h-10 w-10 rounded-lg flex items-center justify-center transition-colors shrink-0"
                                                         style={{ 
                                                             backgroundColor: category.cor ? `${category.cor}20` : undefined,
-                                                            color: category.cor
+                                                            color: category.cor || undefined
                                                         }}
                                                     >
                                                         <Icon className="h-5 w-5" />
@@ -228,7 +228,7 @@ export function Categories() {
                                                         <span className="font-medium text-foreground text-sm">{category.nome}</span>
                                                         {/* Mobile only type indicator */}
                                                         <span className="text-xs text-muted-foreground md:hidden flex items-center gap-1 mt-0.5">
-                                                            <div className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: category.cor }} />
+                                                            <div className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: category.cor ?? undefined }} />
                                                             {(category as unknown as { tipo?: string }).tipo === 'income' ? 'Receita' : 'Despesa'}
                                                         </span>
                                                     </div>

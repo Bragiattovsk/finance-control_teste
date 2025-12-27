@@ -29,7 +29,7 @@ export function useCategories(): UseCategoriesReturn {
 
             const { data, error } = await supabase
                 .from("categories")
-                .select("id, nome, cor, tipo, is_investment, goal_id")
+                .select("id, nome, cor, tipo, is_investment, goal_id, user_id")
                 .eq("user_id", user.id)
                 .order("nome")
 
