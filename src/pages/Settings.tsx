@@ -7,7 +7,6 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { CheckCircle2, AlertCircle, Loader2, LogOut, Camera, User, Mail, CreditCard, Sparkles, Settings as SettingsIcon } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useNavigate } from "react-router-dom"
 import {
     Select,
     SelectContent,
@@ -38,7 +37,6 @@ import {
 export function Settings() {
     const { user, profile, signOut, refreshProfile } = useAuth()
     const { toast } = useToast()
-    const navigate = useNavigate()
     const { isStandalone, installApp, isInstallable } = usePWA()
     const { uploadAvatar, isUploading: isAvatarUploading } = useAvatarUpload()
     

@@ -141,7 +141,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     }, [fetchProfileData])
 
-    const signOut = async () => {
+    const signOut = useCallback(async () => {
         try {
             posthog.reset()
             await supabase.auth.signOut()
@@ -156,7 +156,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             localStorage.removeItem("finance_app_last_activity")
             navigate("/login")
         }
-    }
+    }, [navigate])
 
     const refreshProfile = useCallback(async () => {
         if (!user) return
@@ -176,7 +176,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         deletionDate,
         signOut,
         refreshProfile
-    }), [session, user, profile, loading, isDeletionScheduled, deletionDate, refreshProfile])
+    }), [session, user, profile, loading, isDeletionScheduled, deletionDate, signOut, refreshProfile])
 
     return (
         <AuthContext.Provider value={value}>

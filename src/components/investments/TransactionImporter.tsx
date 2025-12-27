@@ -57,7 +57,7 @@ export function TransactionImporter({ onSuccess }: TransactionImporterProps) {
   const { toast } = useToast();
   const { user } = useAuth();
 
-  const parseExcelDate = (value: any): string | null => {
+  const parseExcelDate = (value: unknown): string | null => {
     if (!value) return null;
 
     let dateObj: Date | null = null;
