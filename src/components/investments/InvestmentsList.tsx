@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Calendar, Wallet, FileText, Edit2, Trash2, TrendingUp, Loader2, Plus } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { NewCategoryModal } from "@/components/NewCategoryModal"
+import { Category } from "@/types"
 
 interface InvestmentItem {
   id: string
@@ -25,13 +26,6 @@ interface InvestmentItem {
   debit_from_balance?: boolean
   category_id?: string | null
   categories?: { id: string; nome: string; tipo: string; cor?: string } | { id: string; nome: string; tipo: string; cor?: string }[] | null
-}
-
-interface Category {
-    id: string
-    nome: string
-    cor: string
-    is_investment?: boolean
 }
 
 interface InvestmentsListProps {

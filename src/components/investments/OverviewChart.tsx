@@ -6,7 +6,6 @@ interface OverviewDataPoint {
     displayMonth: string;
     accumulatedGoal: number;
     accumulatedRealized: number;
-    [key: string]: string | number;
 }
 
 interface OverviewChartProps {
